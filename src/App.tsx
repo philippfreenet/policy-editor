@@ -3,12 +3,14 @@ import {serializePolicy} from './model/serialize.ts'
 import {useEditor} from './state/useEditor.ts'
 import {DiffDialog} from './ui/DiffDialog.tsx'
 import {downloadText} from './ui/download.ts'
+import {ChannelsTab} from './ui/ChannelsTab.tsx'
 import {ErrorBox} from './ui/ErrorBox.tsx'
 import {Header} from './ui/Header.tsx'
 import {LoadScreen} from './ui/LoadScreen.tsx'
 import {loadSucceeds} from './ui/loadSucceeds.ts'
 import {parseFindingPath} from './ui/pathTarget.ts'
 import type {Selection, TabId} from './ui/Selection.ts'
+import {ProvidersTab} from './ui/ProvidersTab.tsx'
 import {TabBar} from './ui/TabBar.tsx'
 import {TabPlaceholder} from './ui/TabPlaceholder.tsx'
 import {ValidationPanel} from './ui/ValidationPanel.tsx'
@@ -51,6 +53,7 @@ export function App(): React.JSX.Element {
   const findings = [...state.parseFindings, ...state.findings]
   const errorCount = findings.filter((f) => f.severity === 'error').length
   const warningCount = findings.length - errorCount
+  const selectedIndex = selected !== null && selected.tab === tab ? selected.index : null
   const showUnknownFieldHint = state.parseFindings.some((f) => f.message.startsWith('Unbekanntes Feld'))
 
   /** Lädt die aktuelle Policy herunter; bei Fehlern in der Prüfung erst nach Rückfrage. */
@@ -94,7 +97,9 @@ export function App(): React.JSX.Element {
       />
       <div className="grid flex-1 grid-cols-1 lg:grid-cols-[1fr_22rem]">
         <main aria-labelledby={`tab-${tab}`} className="min-w-0 p-4" id={`panel-${tab}`} role="tabpanel" tabIndex={0}>
-          <TabPlaceholder selectedIndex={selected !== null && selected.tab === tab ? selected.index : null} tab={tab} />
+          {tab === 'channels' && <ChannelsTab dispatch={dispatch} policy={policy} selected={selectedIndex} />}
+          {tab === 'providers' && <ProvidersTab dispatch={dispatch} policy={policy} selected={selectedIndex} />}
+          {tab === 'rights' && <TabPlaceholder selectedIndex={selectedIndex} tab={tab} />}
         </main>
         <ValidationPanel findings={findings} onSelect={select} showUnknownFieldHint={showUnknownFieldHint} />
       </div>
