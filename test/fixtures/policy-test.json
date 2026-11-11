@@ -1,0 +1,147 @@
+{
+  "channels": ["PRIVATESERVICE", "MCIS"],
+  "providers": [
+    {
+      "name": "Vertragsstatus",
+      "className": "ContractStateProvider",
+      "description": "Nur ein Testprovider. Ergebnisse abhängig von den Argumenten",
+      "negation": false,
+      "params": [
+        {"name": "ContractStates", "values": ["DEACTIVE_PLANNED", "DEACTIVE"]},
+        {"name": "result", "values": ["SUCCESS"]},
+        {"name": "maxDunningLevel", "values": [5]}
+      ]
+    },
+    {
+      "name": "isRekla",
+      "className": "ContractStateProvider",
+      "description": "Nur ein Testprovider. Ergebnisse abhängig von den Argumenten",
+      "negation": false,
+      "params": []
+    },
+    {
+      "name": "Partnerkarte",
+      "className": "ContractAssociationProvider",
+      "description": "Testet, ob es sich bei dem Vertrag um eine Partnerkarte oder nicht handelt",
+      "negation": false,
+      "params": []
+    },
+    {
+      "name": "Teilnehmer_gesperrt",
+      "className": "ContractBarringTypeProvider",
+      "description": "Testet, ob der Teilnehmer gesperrt ist, oder nicht",
+      "negation": true,
+      "params": [
+        {"name": "BarringTypes", "values": ["HOTLINING_BARRING", "FULL_BARRING"]}
+      ]
+    },
+    {
+      "name": "Zahlungsart",
+      "className": "PaymentTypeProvider",
+      "description": "Testet, ob der Vertrag eine bestimmte Zahlungsart hat",
+      "negation": false,
+      "params": [
+        {"name": "PaymentTypes", "values": ["DEBIT", "PREPAID_CREDIT"]}
+      ]
+    },
+    {
+      "name": "isVvl",
+      "className": "VvlProvider",
+      "description": "Testet, ob der Vertrag einen bestimmten Vertragsstatus hat",
+      "negation": true,
+      "params": [
+        {"name": "result", "values": ["DENIED"]}
+      ]
+    },
+    {
+      "name": "hatKeineOffeneErsatzkartenBestellung",
+      "className": "SimOrderProvider",
+      "description": "",
+      "negation": true,
+      "params": []
+    },
+    {
+      "name": "ExtensionMarkProvider",
+      "className": "MarkProvider",
+      "description": "Kein VL24-Mark vorhanden (EXTENSION)",
+      "negation": true,
+      "params": [
+        {"name": "Marks", "values": ["VL24"]}
+      ]
+    },
+    {
+      "name": "ExtensionRecommenderProvider",
+      "className": "RecommenderProvider",
+      "description": "Empfehlungen vorhanden (EXTENSION)",
+      "negation": false,
+      "params": []
+    }
+  ],
+  "rights": [
+    {
+      "name": "isVvl",
+      "description": "Prepaid Seiten",
+      "roles": ["PRODUCT_OWNER"],
+      "channels": ["PRIVATESERVICE"],
+      "condition": {"operator": "AND", "conditions": ["Vertragsstatus"]}
+    },
+    {
+      "name": "isRekla",
+      "description": "Prepaid Seiten",
+      "roles": ["PRODUCT_USER"],
+      "channels": ["MCIS"],
+      "condition": {"operator": "OR", "conditions": ["isRekla"]}
+    },
+    {
+      "name": "staticRight",
+      "description": "Prepaid Seiten",
+      "roles": ["PRODUCT_OWNER", "INTERESTED_PERSON"],
+      "channels": ["PRIVATESERVICE"]
+    },
+    {
+      "name": "Partnerkarte",
+      "description": "Prepaid Seiten",
+      "roles": ["PRODUCT_OWNER"],
+      "channels": ["PRIVATESERVICE"]
+    },
+    {
+      "name": "Teilnehmer gesperrt",
+      "description": "Prepaid Seiten",
+      "roles": ["PRODUCT_OWNER"],
+      "channels": ["PRIVATESERVICE"]
+    },
+    {
+      "name": "PaymentType",
+      "description": "Prepaid Seiten",
+      "roles": ["PRODUCT_OWNER"],
+      "channels": ["PRIVATESERVICE"]
+    },
+    {
+      "name": "ContractState",
+      "description": "Prepaid Seiten",
+      "roles": ["PRODUCT_OWNER"],
+      "channels": ["PRIVATESERVICE"]
+    },
+    {
+      "name": "Ersatzkarte bestellen",
+      "description": "Darf Ersatzkarte bestellen",
+      "roles": ["PRODUCT_OWNER"],
+      "channels": ["PRIVATESERVICE"],
+      "condition": {"operator": "AND", "conditions": ["hatKeineOffeneErsatzkartenBestellung"]}
+    },
+    {
+      "name": "EXTENSION",
+      "description": "Vertragsverlängerung",
+      "roles": ["PRODUCT_OWNER"],
+      "channels": ["PRIVATESERVICE"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Vertragsstatus"]},
+          {"operator": "AND", "conditions": ["ExtensionMarkProvider"]},
+          {"operator": "AND", "conditions": ["ExtensionRecommenderProvider"]}
+        ]
+      }
+    }
+  ]
+}

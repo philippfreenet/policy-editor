@@ -1,0 +1,970 @@
+{
+  "channels": ["PRIVATESERVICE", "KM_PRIVATESERVICE", "APP", "KM_APP", "FREENETVIDEOSELFCARE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+  "providers": [
+    {
+      "name": "Vertrag_nicht_gesperrt_auf_Kundenwunsch",
+      "className": "ContractBarringTypeProvider",
+      "description": "Vertrag hat Status \"FULL BARRING\"_\"HOTLINING BARRING\"",
+      "negation": true,
+      "params": [
+        {"name": "BarringTypes", "values": ["FULL_BARRING", "HOTLINING_BARRING"]},
+        {"name": "BarringReasons", "values": ["VL", "GS", "KW"]},
+        {"name": "onlyThisReasons", "values": [true]}
+      ]
+    },
+    {
+      "name": "Vertrag_gesperrt_auf_Kundenwunsch",
+      "className": "ContractBarringTypeProvider",
+      "description": "Vertrag hat Status \"FULL BARRING\"_\"HOTLINING BARRING\"",
+      "negation": false,
+      "params": [
+        {"name": "BarringTypes", "values": ["FULL_BARRING", "HOTLINING_BARRING"]},
+        {"name": "BarringReasons", "values": ["VL", "GS", "KW"]},
+        {"name": "onlyThisReasons", "values": [true]}
+      ]
+    },
+    {
+      "name": "Vertrag_hat_hotline_sperre",
+      "className": "ContractBarringTypeProvider",
+      "description": "Vertrag hat Status \"HOTLINING BARRING\"",
+      "negation": false,
+      "params": [
+        {"name": "BarringTypes", "values": ["HOTLINING_BARRING"]}
+      ]
+    },
+    {
+      "name": "Vertrag_nicht_gesperrt",
+      "className": "ContractBarringTypeProvider",
+      "description": "Vertrag hat nicht Status \"FULL BARRING\"_\"HOTLINING BARRING\"_oder \"FM HOTLINING BARRING\"",
+      "negation": true,
+      "params": [
+        {"name": "BarringTypes", "values": ["FULL_BARRING", "HOTLINING_BARRING", "FM_HOTLINING_BARRING"]}
+      ]
+    },
+    {
+      "name": "Vertrag_aktiv",
+      "className": "ContractStateProvider",
+      "description": "Vertrag ist aktiv",
+      "negation": false,
+      "params": [
+        {"name": "ContractStates", "values": ["ACTIVE", "ACTIVE_PLANNED", "DEACTIVE_PLANNED"]}
+      ]
+    },
+    {
+      "name": "Kein_Mitarbeiter",
+      "className": "CustomerTypeProvider",
+      "description": "Ist kein Mitarbeiter",
+      "negation": true,
+      "params": [
+        {"name": "customerTypes", "values": ["COLLABORATOR"]}
+      ]
+    },
+    {
+      "name": "Nicht_MobilcomGroup",
+      "className": "CustomerTypeProvider",
+      "description": "KD ist nicht MobilcomGroup",
+      "negation": true,
+      "params": [
+        {"name": "customerTypes", "values": ["MOBILCOM_GROUP"]}
+      ]
+    },
+    {
+      "name": "Mobilfunkvertrag",
+      "className": "ContractTypeProvider",
+      "description": "Mobilfunkvertrag",
+      "negation": false,
+      "params": [
+        {"name": "ContractSegments", "values": ["TELCO"]}
+      ]
+    },
+    {
+      "name": "Partnercard",
+      "className": "ContractAssociationProvider",
+      "description": "Vertrag ist eine PartnerCard",
+      "negation": false,
+      "params": [
+        {"name": "ContractAssociations", "values": ["PARTNER_CONTRACT"]}
+      ]
+    },
+    {
+      "name": "Prepaidvertrag",
+      "className": "PaymentTypeProvider",
+      "description": "Wird per Prepaid bezahlt",
+      "negation": false,
+      "params": [
+        {"name": "PaymentTypes", "values": ["DEBIT"]}
+      ]
+    },
+    {
+      "name": "Kein_Prepaidvertrag",
+      "className": "PaymentTypeProvider",
+      "description": "Wird nicht per Prepaid bezahlt",
+      "negation": true,
+      "params": [
+        {"name": "PaymentTypes", "values": ["DEBIT"]}
+      ]
+    },
+    {
+      "name": "Allnet2Go_Vertrag",
+      "className": "PaymentTypeProvider",
+      "description": "Wird per Allnet2Go bezahlt",
+      "negation": false,
+      "params": [
+        {"name": "PaymentTypes", "values": ["PREPAID_CREDIT"]}
+      ]
+    },
+    {
+      "name": "Privatkunde",
+      "className": "CustomerTypeProvider",
+      "description": "Privatkunde",
+      "negation": false,
+      "params": [
+        {"name": "customerTypes", "values": ["END_CUSTOMER"]}
+      ]
+    },
+    {
+      "name": "Hat_keine_Mahnstufe_2",
+      "className": "DunningLevelProvider",
+      "description": "KD mit Mahnstufe höchstens 1",
+      "negation": false,
+      "params": [
+        {"name": "maxDunningLevel", "values": [2]}
+      ]
+    },
+    {
+      "name": "DOM",
+      "className": "ContractTypeProvider",
+      "description": "KD hat DOM (oder SmartHome) Vertrag",
+      "negation": false,
+      "params": [
+        {"name": "ContractSegments", "values": ["ENERGY"]}
+      ]
+    },
+    {
+      "name": "Hat_keine_TWA_Markierung",
+      "className": "MarkProvider",
+      "description": "Vertrag hat keine TWA Markierung",
+      "negation": true,
+      "params": [
+        {"name": "Marks", "values": ["TWA"]}
+      ]
+    },
+    {
+      "name": "Hat_keine_Vl_Markierung",
+      "className": "MarkProvider",
+      "description": "Vertrag hat keine VL24 Markierung",
+      "negation": true,
+      "params": [
+        {"name": "Marks", "values": ["VL24"]}
+      ]
+    },
+    {
+      "name": "Nicht_Vvl_fähig",
+      "className": "VvlProvider",
+      "description": "Vertrag ist nicht VVL fähig",
+      "negation": true,
+      "params": []
+    },
+    {
+      "name": "Vvl_fähig",
+      "className": "VvlProvider",
+      "description": "Vertrag ist VVL fähig",
+      "negation": false,
+      "params": []
+    },
+    {
+      "name": "Vertrag_deaktiv",
+      "className": "ContractStateProvider",
+      "description": "Vertrag ist nicht aktiv",
+      "negation": true,
+      "params": [
+        {"name": "ContractStates", "values": ["ACTIVE", "ACTIVE_PLANNED", "DEACTIVE_PLANNED"]}
+      ]
+    },
+    {
+      "name": "Hat_SEF_Markierung",
+      "className": "MarkProvider",
+      "description": "Der Kunde hat eine SEF Markierung",
+      "negation": false,
+      "params": [
+        {"name": "MarkTarget", "values": ["CONTRACT"]},
+        {"name": "Marks", "values": ["SEF"]}
+      ]
+    },
+    {
+      "name": "Hat_Option_EVN",
+      "className": "ContractOptionProvider",
+      "description": "Der Kunde hat eine Vertragsoption EVN",
+      "negation": false,
+      "params": [
+        {"name": "ContractOptions", "values": ["EVN"]}
+      ]
+    },
+    {
+      "name": "Hat_keine_Option_EVN",
+      "className": "ContractOptionProvider",
+      "description": "Der Kunde hat keine Vertragsoption EVN",
+      "negation": true,
+      "params": [
+        {"name": "ContractOptions", "values": ["EVN"]}
+      ]
+    },
+    {
+      "name": "Ohne_Opos",
+      "className": "OpenItemProvider",
+      "description": "KD ohne offene Posten",
+      "negation": true,
+      "params": []
+    },
+    {
+      "name": "Mit_Opos",
+      "className": "OpenItemProvider",
+      "description": "KD mit offenen Posten",
+      "negation": false,
+      "params": []
+    },
+    {
+      "name": "Kein_Datentarif",
+      "className": "TariffReferenceProvider",
+      "description": "Kunde hat keinen Datentariff",
+      "negation": true,
+      "params": [
+        {"name": "tariffFlag", "values": ["DATA_TARIFF"]}
+      ]
+    },
+    {
+      "name": "Kein_Datentarif_KM",
+      "className": "TariffReferenceProvider",
+      "description": "Kunde hat keinen Datentariff",
+      "negation": true,
+      "params": [
+        {"name": "tariffFlag", "values": ["DATA_TARIFF"]},
+        {"name": "allowedChannels", "values": ["KM_APP", "KM_PRIVATESERVICE"]}
+      ]
+    },
+    {
+      "name": "Mit_Datentarif",
+      "className": "TariffReferenceProvider",
+      "description": "Kunde hat einen Datentariff",
+      "negation": false,
+      "params": [
+        {"name": "tariffFlag", "values": ["DATA_TARIFF"]}
+      ]
+    },
+    {
+      "name": "Mitarbeiter",
+      "className": "CustomerTypeProvider",
+      "description": "Ist ein Mitarbeiter",
+      "negation": false,
+      "params": [
+        {"name": "customerTypes", "values": ["COLLABORATOR"]}
+      ]
+    },
+    {
+      "name": "Premiumkunde",
+      "className": "CustomerTypeProvider",
+      "description": "Ist ein Premium-Kunde",
+      "negation": false,
+      "params": [
+        {"name": "customerTypes", "values": ["PREMIUM"]}
+      ]
+    },
+    {
+      "name": "Ohne_Moirasperre",
+      "className": "ContractBarringTypeProvider",
+      "description": "Vertrag het keine Moriasperre",
+      "negation": true,
+      "params": [
+        {"name": "BarringTypes", "values": ["FM_HOTLINING_BARRING"]}
+      ]
+    },
+    {
+      "name": "Ohne_Vollsperre",
+      "className": "ContractOptionProvider",
+      "description": "Vertrag hat die Option 32668 (shortcut=SpVollKd) bei MC und SP Kunden bzw. bei CW-Kunden: 20737 (shortcut= NBAR)",
+      "negation": true,
+      "params": [
+        {"name": "ContractOptions", "values": ["MC=>SpVollKd", "SP=>SpVollKd", "CW=>NBAR"]}
+      ]
+    },
+    {
+      "name": "Hat_Mahnstufe_5",
+      "className": "DunningLevelProvider",
+      "description": "KD mit Mahnstufe >= 5",
+      "negation": true,
+      "params": [
+        {"name": "maxDunningLevel", "values": [5]}
+      ]
+    },
+    {
+      "name": "Hat_Mahnstufe_ohne_HWRK_maximal_4",
+      "className": "DunningLevelProvider",
+      "description": "KD mit Mahnstufe <=4 (ohne HWRK)",
+      "negation": false,
+      "params": [
+        {"name": "maxDunningLevel", "values": [5]},
+        {"name": "accountClass", "values": ["TK_MAHNSTUFE", "DOM_MAHNSTUFE"]}
+      ]
+    },
+    {
+      "name": "Gekuendigt_in_letzten_6_Monaten",
+      "className": "ContractStateProvider",
+      "description": "Vertrag hat den Status COMPLETED oder DEACTIVE und wurde innerhalb der letzten 6 Monate gekündigt.",
+      "negation": false,
+      "params": [
+        {"name": "ContractStates", "values": ["CANCELED_IN_LAST_SIX_MONTH"]}
+      ]
+    },
+    {
+      "name": "Mit_Opos_ohne_HWRK_50",
+      "className": "OpenItemProvider",
+      "description": "KD mit offenen Posten mit einem Betrag größer gleich 50€ (ohne HWRK)",
+      "negation": false,
+      "params": [
+        {"name": "minOpos", "values": [50]},
+        {"name": "accountClass", "values": ["TK_MAHNSTUFE", "DOM_MAHNSTUFE"]}
+      ]
+    },
+    {
+      "name": "Geschaeftskunde",
+      "className": "CustomerTypeProvider",
+      "description": "Handelt es sich um ein Geschäftskunde",
+      "negation": false,
+      "params": [
+        {"name": "customerTypes", "values": ["BUSINESS_CUSTOMER"]}
+      ]
+    },
+    {
+      "name": "Hat_keine_offenen_Ersatzkartenbestellungen",
+      "className": "SimOrderProvider",
+      "description": "KD hat keine offene Ersatzkartenbestellung",
+      "negation": true,
+      "params": []
+    },
+    {
+      "name": "Darf_Rufnummer_exportiert_werden",
+      "className": "MNPProvider",
+      "description": "Fragt den MobileNumberPortingService, ob eine Exportierung erlaubt ist",
+      "negation": false,
+      "params": []
+    },
+    {
+      "name": "Hat_nicht_O2_Netz",
+      "className": "NetworkProvider",
+      "description": "Vertrag ist nicht im O2-Netz",
+      "negation": true,
+      "params": [
+        {"name": "network", "values": ["O2"]}
+      ]
+    },
+    {
+      "name": "Nur_Individual",
+      "className": "PersonTypeProvider",
+      "description": "Handelt es sich um einen Privatkunden?",
+      "negation": false,
+      "params": [
+        {"name": "PersonType", "values": ["INDIVIDUAL"]}
+      ]
+    },
+    {
+      "name": "Kein_Superrobi",
+      "className": "MarketingPermitProvider",
+      "description": "Der Kunde verweigert keine Werbeanfragen",
+      "negation": true,
+      "params": [
+        {"name": "MarketingPermit", "values": ["NO_PERMISSION_NO_REQUESTS"]}
+      ]
+    },
+    {
+      "name": "Hat_Werberklasse_KEW_oder_NONVOICE",
+      "className": "MarketingPermitProvider",
+      "description": "Der Kunde hat die Werbeklasse NONVOICE oder KEW",
+      "negation": false,
+      "params": [
+        {"name": "MarketingPermit", "values": ["UNCONFIRMED", "RESTRICTED_PERMISSION_NO_VOICE"]}
+      ]
+    },
+    {
+      "name": "Hat_Mahnstufe_ohne_HWRK_maximal_1",
+      "className": "DunningLevelProvider",
+      "description": "KD mit Mahnstufe höchstens 1 (ohne HWRK)",
+      "negation": false,
+      "params": [
+        {"name": "maxDunningLevel", "values": [2]},
+        {"name": "accountClass", "values": ["TK_MAHNSTUFE", "DOM_MAHNSTUFE"]}
+      ]
+    },
+    {
+      "name": "Hat_Mahnstufe_ohne_HWRK_maximal_3",
+      "className": "DunningLevelProvider",
+      "description": "KD mit Mahnstufe höchstens 3 (ohne HWRK)",
+      "negation": false,
+      "params": [
+        {"name": "maxDunningLevel", "values": [4]},
+        {"name": "accountClass", "values": ["TK_MAHNSTUFE", "DOM_MAHNSTUFE"]}
+      ]
+    },
+    {
+      "name": "Hat_Tarifwechselangebote",
+      "className": "RecommenderProvider",
+      "description": "Vertrag bekommt Tarifwechselangebote vom Recommender",
+      "negation": false,
+      "params": []
+    },
+    {
+      "name": "Hat_keine_MultiSim",
+      "className": "MultiSimProvider",
+      "description": "Vertrag beinhaltet keine Mehrfach-SIM",
+      "negation": true,
+      "params": []
+    },
+    {
+      "name": "Extension_Zielnetz_unveraendert",
+      "className": "NetworkProvider",
+      "description": "Angefragtes Zielnetz entspricht dem aktuellen Netz des Vertrags",
+      "negation": false,
+      "params": []
+    }
+  ],
+  "rights": [
+    {
+      "name": "Dashboard",
+      "description": "Einsicht auf das Dashboard",
+      "roles": ["PRODUCT_OWNER", "PRODUCT_USER", "INTERESTED_PERSON", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {"operator": "AND", "conditions": ["Vertrag_aktiv"]}
+    },
+    {
+      "name": "MeineDatenUebersicht",
+      "description": "Einblick Meine Daten Übersichtsseite",
+      "roles": ["PRODUCT_OWNER", "PRODUCT_USER", "INTERESTED_PERSON", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"]
+    },
+    {
+      "name": "MeineVertraegeUebersicht",
+      "description": "Einblick Meine Verträge Übersichtsseite",
+      "roles": ["PRODUCT_OWNER", "PRODUCT_USER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "FREENETVIDEOSELFCARE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"]
+    },
+    {
+      "name": "SimkarteSperren",
+      "description": "Kann die Sim-Karte gesperrt werden",
+      "roles": ["PRODUCT_OWNER", "PRODUCT_USER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "KM_PRIVATESERVICE", "APP", "KM_APP", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Nicht_MobilcomGroup"]},
+          {"operator": "AND", "conditions": ["Vertrag_nicht_gesperrt", "Vertrag_aktiv", "Mobilfunkvertrag"]}
+        ]
+      }
+    },
+    {
+      "name": "SimkarteEntsperren",
+      "description": "Kann die Sim-Karte entsperrt werden",
+      "roles": ["PRODUCT_OWNER", "PRODUCT_USER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "KM_PRIVATESERVICE", "APP", "KM_APP", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Vertrag_aktiv", "Mobilfunkvertrag"]},
+          {"operator": "AND", "conditions": ["Nicht_MobilcomGroup"]},
+          {"operator": "AND", "conditions": ["Vertrag_gesperrt_auf_Kundenwunsch"]}
+        ]
+      }
+    },
+    {
+      "name": "TarifdetailsAnzeigen",
+      "description": "Dürfen Tarifdetails angezeigt werden",
+      "roles": ["PRODUCT_OWNER", "PRODUCT_USER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {"operator": "AND", "conditions": ["Vertrag_aktiv"]}
+    },
+    {
+      "name": "ServicepreislisteAnzeigen",
+      "description": "Darf die Servicepreisliste angezeigt werden",
+      "roles": ["PRODUCT_OWNER", "PRODUCT_USER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {"operator": "AND", "conditions": ["Vertrag_aktiv"]}
+    },
+    {
+      "name": "Zielnetzabfrage",
+      "description": "Darf eine Zielnetzabfrage gemacht werden",
+      "roles": ["PRODUCT_OWNER", "PRODUCT_USER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {"operator": "AND", "conditions": ["Vertrag_aktiv", "Mobilfunkvertrag"]}
+    },
+    {
+      "name": "PukErmitteln",
+      "description": "Darf der PUK ermittelt werden",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "KM_PRIVATESERVICE", "APP", "KM_APP", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Kein_Prepaidvertrag"]},
+          {"operator": "AND", "conditions": ["Nicht_MobilcomGroup"]},
+          {"operator": "AND", "conditions": ["Vertrag_nicht_gesperrt", "Vertrag_aktiv", "Mobilfunkvertrag"]},
+          {"operator": "AND", "conditions": ["Hat_Mahnstufe_ohne_HWRK_maximal_3"]}
+        ]
+      }
+    },
+    {
+      "name": "ErsatzkarteBestellen",
+      "description": "Darf eine Ersatzkarte bestellt werden",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "KM_PRIVATESERVICE", "APP", "KM_APP", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Vertrag_aktiv", "Mobilfunkvertrag"]},
+          {"operator": "AND", "conditions": ["Nicht_MobilcomGroup"]},
+          {"operator": "OR", "conditions": ["Vertrag_gesperrt_auf_Kundenwunsch", "Vertrag_nicht_gesperrt"]},
+          {"operator": "AND", "conditions": ["Hat_keine_offenen_Ersatzkartenbestellungen"]},
+          {"operator": "AND", "conditions": ["Hat_Mahnstufe_ohne_HWRK_maximal_3"]}
+        ]
+      }
+    },
+    {
+      "name": "LieferstatusAnzeigen",
+      "description": "KD kann Lieferstatus einsehen",
+      "roles": ["PRODUCT_OWNER", "PRODUCT_USER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Nicht_MobilcomGroup"]},
+          {"operator": "AND", "conditions": ["Vertrag_aktiv", "Mobilfunkvertrag", "Kein_Prepaidvertrag"]}
+        ]
+      }
+    },
+    {
+      "name": "VertragVerlaengern2",
+      "description": "KD kann Vertragsverlängerung ausführen (Vollautomatisch). Neues Recht für den PolicyMicroservice der auch Orgas unterscheidet",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "KM_PRIVATESERVICE", "APP", "KM_APP", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Kein_Prepaidvertrag"]},
+          {"operator": "AND", "conditions": ["Kein_Mitarbeiter"]},
+          {"operator": "AND", "conditions": ["Vertrag_nicht_gesperrt", "Vertrag_aktiv", "Mobilfunkvertrag"]},
+          {"operator": "AND", "conditions": ["Hat_keine_TWA_Markierung", "Hat_keine_Vl_Markierung", "Vvl_fähig"]},
+          {"operator": "AND", "conditions": ["Kein_Datentarif_KM"]},
+          {"operator": "AND", "conditions": ["Hat_keine_Mahnstufe_2"]}
+        ]
+      }
+    },
+    {
+      "name": "VertragVerlaengern",
+      "description": "KD kann Vertragsverlängerung ausführen (Vollautomatisch)",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "KM_PRIVATESERVICE", "APP", "KM_APP", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Kein_Prepaidvertrag"]},
+          {"operator": "AND", "conditions": ["Kein_Mitarbeiter"]},
+          {"operator": "AND", "conditions": ["Vertrag_nicht_gesperrt", "Vertrag_aktiv", "Mobilfunkvertrag"]},
+          {"operator": "AND", "conditions": ["Hat_keine_TWA_Markierung", "Hat_keine_Vl_Markierung", "Vvl_fähig"]},
+          {"operator": "AND", "conditions": ["Hat_keine_Mahnstufe_2"]}
+        ]
+      }
+    },
+    {
+      "name": "VVLRecht",
+      "description": "KD darf Vertragsverlängerung ausführen, sofern er VVL-fähig ist",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "KM_PRIVATESERVICE", "APP", "KM_APP", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Kein_Prepaidvertrag"]},
+          {"operator": "AND", "conditions": ["Kein_Mitarbeiter"]},
+          {"operator": "AND", "conditions": ["Vertrag_nicht_gesperrt", "Vertrag_aktiv", "Mobilfunkvertrag"]},
+          {"operator": "AND", "conditions": ["Kein_Datentarif_KM"]},
+          {"operator": "AND", "conditions": ["Hat_keine_Mahnstufe_2"]},
+          {"operator": "AND", "conditions": ["Hat_keine_Vl_Markierung"]}
+        ]
+      }
+    },
+    {
+      "name": "SmsVersenden",
+      "description": "KD darf kostenlose Email versenden",
+      "roles": ["PRODUCT_OWNER", "PRODUCT_USER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Nicht_MobilcomGroup"]},
+          {"operator": "AND", "conditions": ["Vertrag_nicht_gesperrt", "Vertrag_aktiv", "Mobilfunkvertrag"]},
+          {"operator": "AND", "conditions": ["Hat_keine_Mahnstufe_2"]}
+        ]
+      }
+    },
+    {
+      "name": "OwnerBankAendern",
+      "description": "Darf der User die Vertragspartner-Bankverbindung ändern",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "FREENETVIDEOSELFCARE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {"operator": "AND", "conditions": ["Vertrag_aktiv"]}
+    },
+    {
+      "name": "DatenschutzkennwortAendern",
+      "description": "KD darf Datenschutzkennwort ändern (MCBS)",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {"operator": "AND", "conditions": ["Vertrag_aktiv"]}
+    },
+    {
+      "name": "PasswortAendern",
+      "description": "Darf der User das Owner-Passwort ändern",
+      "roles": ["PRODUCT_OWNER", "PRODUCT_USER", "INTERESTED_PERSON", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"]
+    },
+    {
+      "name": "BenutzernameAendern",
+      "description": "Darf der Owner den Benutzernamen für seinen CIM Accout ändern",
+      "roles": ["PRODUCT_OWNER", "PRODUCT_USER", "INTERESTED_PERSON", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"]
+    },
+    {
+      "name": "EvnAnzeigen",
+      "description": "KD kann seinen Einzelverbindungsnachweis einsehen",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {"operator": "AND", "conditions": ["Vertrag_aktiv", "Mobilfunkvertrag", "Kein_Prepaidvertrag"]}
+    },
+    {
+      "name": "RechnungUebersicht",
+      "description": "KD kann seine Rechnung einsehen",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"]
+    },
+    {
+      "name": "RechnungstypAendern",
+      "description": "KD stellt auf Onlinerechnung um",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {"operator": "AND", "conditions": ["Vertrag_aktiv", "Mobilfunkvertrag", "Kein_Prepaidvertrag"]}
+    },
+    {
+      "name": "Rechnungserlaeuterung",
+      "description": "KD sieht Erklärungsseiten zu seiner Rechnung",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {
+        "operator": "OR",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Vertrag_aktiv"]},
+          {"operator": "AND", "conditions": ["Gekuendigt_in_letzten_6_Monaten"]}
+        ]
+      }
+    },
+    {
+      "name": "RechnungsFaq",
+      "description": "FAQ`s zu den Rechnungen",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {"operator": "AND", "conditions": ["Vertrag_aktiv"]}
+    },
+    {
+      "name": "Rechnungsanalyse",
+      "description": "Seiten zum Analysieren der Rechnung",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Vertrag_aktiv"]},
+          {"operator": "AND", "conditions": ["Kein_Prepaidvertrag"]}
+        ]
+      }
+    },
+    {
+      "name": "RechnungsbenachrichtigungAendern",
+      "description": "KD kann seine Rechnungsbenachrichtigung ändern",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "FREENETVIDEOSELFCARE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Vertrag_aktiv"]},
+          {"operator": "AND", "conditions": ["Kein_Prepaidvertrag"]}
+        ]
+      }
+    },
+    {
+      "name": "RechnungsadresseAendern",
+      "description": "KD darf die Rechnungsadresse ändern",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Vertrag_aktiv"]},
+          {"operator": "AND", "conditions": ["Kein_Prepaidvertrag"]}
+        ]
+      }
+    },
+    {
+      "name": "RechnungsadresseAnzeigen",
+      "description": "KD kann die Rechnungsadresse einsehen",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"]
+    },
+    {
+      "name": "EvnAendern",
+      "description": "KD kann seine EVN Einstellungen ändern",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Kein_Prepaidvertrag"]},
+          {"operator": "AND", "conditions": ["Vertrag_nicht_gesperrt", "Vertrag_aktiv", "Mobilfunkvertrag"]},
+          {"operator": "AND", "conditions": ["Hat_Mahnstufe_ohne_HWRK_maximal_1"]}
+        ]
+      }
+    },
+    {
+      "name": "KostenCheckAnzeigen",
+      "description": "KD kann seine nicht abgerechneten Calls einsehen",
+      "roles": ["PRODUCT_OWNER", "PRODUCT_USER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {"operator": "AND", "conditions": ["Vertrag_aktiv", "Mobilfunkvertrag"]}
+    },
+    {
+      "name": "KostenCheckSmsAnzeigen",
+      "description": "Infoseite für Kosten Check per SMS",
+      "roles": ["PRODUCT_OWNER", "PRODUCT_USER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Nicht_MobilcomGroup"]},
+          {"operator": "AND", "conditions": ["Vertrag_aktiv", "Mobilfunkvertrag", "Kein_Prepaidvertrag"]}
+        ]
+      }
+    },
+    {
+      "name": "Tarifwechsel",
+      "description": "KD darf Tarifwechsel durchrufen",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "KM_PRIVATESERVICE", "MYMCIS", "IVR", "APP", "KM_APP", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Kein_Prepaidvertrag"]},
+          {"operator": "AND", "conditions": ["Kein_Mitarbeiter"]},
+          {"operator": "AND", "conditions": ["Vertrag_nicht_gesperrt", "Vertrag_aktiv", "Mobilfunkvertrag"]},
+          {"operator": "AND", "conditions": ["Hat_keine_TWA_Markierung"]},
+          {"operator": "AND", "conditions": ["Hat_Mahnstufe_ohne_HWRK_maximal_1"]},
+          {"operator": "AND", "conditions": ["Hat_Tarifwechselangebote"]}
+        ]
+      }
+    },
+    {
+      "name": "Optionsbuchung",
+      "description": "KD darf Optionsbuchungen durchführen",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Kein_Prepaidvertrag"]},
+          {"operator": "AND", "conditions": ["Nicht_MobilcomGroup"]},
+          {"operator": "AND", "conditions": ["Vertrag_nicht_gesperrt", "Vertrag_aktiv", "Mobilfunkvertrag"]},
+          {"operator": "AND", "conditions": ["Hat_keine_Mahnstufe_2"]}
+        ]
+      }
+    },
+    {
+      "name": "PartnercardBestellen",
+      "description": "KD kann Partnercard bestellen",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Kein_Prepaidvertrag"]},
+          {"operator": "AND", "conditions": ["Nicht_MobilcomGroup"]},
+          {"operator": "AND", "conditions": ["Kein_Mitarbeiter"]},
+          {"operator": "AND", "conditions": ["Vertrag_nicht_gesperrt", "Vertrag_aktiv", "Mobilfunkvertrag"]},
+          {"operator": "AND", "conditions": ["Hat_keine_Mahnstufe_2"]}
+        ]
+      }
+    },
+    {
+      "name": "MehrfachSimBestellen",
+      "description": "KD kann MehrfachSIM bestellen",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "KM_PRIVATESERVICE", "APP", "KM_APP", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Vertrag_aktiv", "Mobilfunkvertrag"]},
+          {"operator": "AND", "conditions": ["Kein_Prepaidvertrag"]},
+          {"operator": "AND", "conditions": ["Nicht_MobilcomGroup"]},
+          {"operator": "AND", "conditions": ["Kein_Mitarbeiter"]},
+          {"operator": "AND", "conditions": ["Hat_keine_Mahnstufe_2", "Ohne_Opos"]},
+          {"operator": "OR", "conditions": ["Vertrag_gesperrt_auf_Kundenwunsch", "Vertrag_nicht_gesperrt"]},
+          {"operator": "OR", "conditions": ["Kein_Datentarif", "Hat_nicht_O2_Netz"]},
+          {"operator": "AND", "conditions": ["Hat_nicht_O2_Netz"]}
+        ]
+      }
+    },
+    {
+      "name": "Prepaid",
+      "description": "Prepaid Seiten",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Vertrag_nicht_gesperrt", "Vertrag_aktiv", "Mobilfunkvertrag"]},
+          {"operator": "AND", "conditions": ["Prepaidvertrag"]},
+          {"operator": "AND", "conditions": ["Hat_keine_Mahnstufe_2"]}
+        ]
+      }
+    },
+    {
+      "name": "InkassoPartnerAnzeigen",
+      "description": "Darf der Inkassopartner angezeigt werden?",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Vertrag_deaktiv"]},
+          {"operator": "AND", "conditions": ["Hat_SEF_Markierung"]}
+        ]
+      }
+    },
+    {
+      "name": "VvlReminder",
+      "description": "Gibt an, ob der Kunde sich an die Erinnerungsfunktion für eine VVL anmelden darf",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "KM_PRIVATESERVICE", "APP", "KM_APP", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Kein_Prepaidvertrag"]},
+          {"operator": "AND", "conditions": ["Vertrag_nicht_gesperrt", "Vertrag_aktiv", "Mobilfunkvertrag"]},
+          {"operator": "AND", "conditions": ["Nicht_Vvl_fähig"]},
+          {"operator": "AND", "conditions": ["Hat_keine_Mahnstufe_2"]},
+          {"operator": "AND", "conditions": ["Hat_Werberklasse_KEW_oder_NONVOICE"]}
+        ]
+      }
+    },
+    {
+      "name": "BankdatenAnzeigen",
+      "description": "KD kann Bankdaten einsehen",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "FREENETVIDEOSELFCARE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"]
+    },
+    {
+      "name": "AdresseAendern",
+      "description": "KD darf seine Kundenadresse ändern",
+      "roles": ["PRODUCT_USER", "PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "FREENETVIDEOSELFCARE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {"operator": "AND", "conditions": ["Vertrag_aktiv"]}
+    },
+    {
+      "name": "WerbeerlaubnisAendern",
+      "description": "Darf der User die Vertragspartner-Werbeerlaubnis ändern",
+      "roles": ["PRODUCT_USER", "PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "KM_PRIVATESERVICE", "APP", "KM_APP", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {"operator": "AND", "conditions": ["Nur_Individual", "Kein_Superrobi"]}
+    },
+    {
+      "name": "VertragVerlaengernHotline",
+      "description": "Anzeige Rufnummer für die Hotline zur VVL",
+      "roles": ["PRODUCT_USER", "PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Vertrag_nicht_gesperrt", "Vertrag_aktiv", "Mobilfunkvertrag"]},
+          {"operator": "AND", "conditions": ["Hat_keine_TWA_Markierung", "Hat_keine_Vl_Markierung", "Vvl_fähig"]},
+          {"operator": "AND", "conditions": ["Hat_keine_Mahnstufe_2"]}
+        ]
+      }
+    },
+    {
+      "name": "Chat",
+      "description": "Darf der Kunde den Support-Chat benutzen",
+      "roles": ["PRODUCT_OWNER", "PRODUCT_USER", "INTERESTED_PERSON", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Nicht_MobilcomGroup"]},
+          {"operator": "AND", "conditions": ["Kein_Mitarbeiter"]},
+          {"operator": "AND", "conditions": ["Hat_keine_Mahnstufe_2"]},
+          {"operator": "AND", "conditions": ["Ohne_Moirasperre"]}
+        ]
+      }
+    },
+    {
+      "name": "Ohne_Vollsperre",
+      "description": "Hat der Kunde eine Vollsperre",
+      "roles": ["PRODUCT_OWNER", "PRODUCT_USER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {"operator": "AND", "conditions": ["Ohne_Vollsperre"]}
+    },
+    {
+      "name": "Kontaktformular_Mahnstufe",
+      "description": "Hat der Kunde das Recht das Kontaktformular aufgrund zu hoher Mahnstufe zu sehen",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {"operator": "AND", "conditions": ["Hat_Mahnstufe_5"]}
+    },
+    {
+      "name": "Kontaktformular_Ratenzahlung",
+      "description": "Hat der Kunde das Recht das Kontaktformular aufgrund von Ratenzahlung zu sehen",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "OR", "conditions": ["Vertrag_hat_hotline_sperre", "Vertrag_aktiv"]},
+          {"operator": "AND", "conditions": ["Hat_Mahnstufe_ohne_HWRK_maximal_4", "Mit_Opos_ohne_HWRK_50"]}
+        ]
+      }
+    },
+    {
+      "name": "KontaktEmailAendern",
+      "description": "Der Kunde darf seine Email für den Kundenkontakt ändern",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {"operator": "AND", "conditions": ["Vertrag_aktiv"]}
+    },
+    {
+      "name": "RufnummernExportierung",
+      "description": "Darf der Kunde eine Rufnummerexportierung durchführen",
+      "roles": ["PRODUCT_OWNER", "ACCOUNT_ADMIN"],
+      "channels": ["PRIVATESERVICE", "KM_PRIVATESERVICE", "APP", "KM_APP", "MYMCIS", "IVR", "TELESALESBUDDY", "GENIE", "IDACALL", "IDAPOS"],
+      "condition": {"operator": "AND", "conditions": ["Darf_Rufnummer_exportiert_werden"]}
+    },
+    {
+      "name": "EXTENSION",
+      "description": "Der Kunde darf Vertrangsverlängerungen durchführen",
+      "roles": ["PRODUCT_OWNER"],
+      "channels": ["PRIVATESERVICE"],
+      "condition": {
+        "operator": "AND",
+        "conditions": [
+          {"operator": "AND", "conditions": ["Hat_Tarifwechselangebote"]},
+          {"operator": "AND", "conditions": ["Kein_Prepaidvertrag"]},
+          {"operator": "AND", "conditions": ["Kein_Mitarbeiter"]},
+          {"operator": "AND", "conditions": ["Vertrag_nicht_gesperrt", "Vertrag_aktiv", "Mobilfunkvertrag"]},
+          {"operator": "AND", "conditions": ["Kein_Datentarif_KM"]},
+          {"operator": "AND", "conditions": ["Hat_keine_Mahnstufe_2"]},
+          {"operator": "AND", "conditions": ["Hat_keine_Vl_Markierung"]},
+          {"operator": "OR", "conditions": ["Hat_keine_MultiSim", "Extension_Zielnetz_unveraendert"]}
+        ]
+      }
+    }
+  ]
+}
