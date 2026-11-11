@@ -6,6 +6,7 @@ import {downloadText} from './ui/download.ts'
 import {ErrorBox} from './ui/ErrorBox.tsx'
 import {Header} from './ui/Header.tsx'
 import {LoadScreen} from './ui/LoadScreen.tsx'
+import {loadSucceeds} from './ui/loadSucceeds.ts'
 import {parseFindingPath} from './ui/pathTarget.ts'
 import type {Selection, TabId} from './ui/Selection.ts'
 import {TabBar} from './ui/TabBar.tsx'
@@ -32,8 +33,10 @@ export function App(): React.JSX.Element {
         onClearError={clearError}
         onLoad={(text) => {
           dispatch({text, type: 'load'})
-          setReloading(false)
-          setSelected(null)
+          if (loadSucceeds({text})) {
+            setReloading(false)
+            setSelected(null)
+          }
         }}
         onNew={() => {
           dispatch({type: 'new'})
