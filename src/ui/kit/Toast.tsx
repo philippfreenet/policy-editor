@@ -5,12 +5,14 @@ interface ToastProps {
   message: string | null
   /** Wird aufgerufen, sobald die Meldung nach 3 s verschwinden soll. */
   onDone: () => void
+  /** Ändert sich bei jedem erneuten Zeigen derselben Meldung und startet die 3 s neu. */
+  showId?: number
 }
 
 const TOAST_MS = 3000
 
 /** Flüchtige Statusmeldung (Live-Region); meldet sich nach 3 s über `onDone` ab. */
-export function Toast({message, onDone}: ToastProps): React.JSX.Element {
+export function Toast({message, onDone, showId}: ToastProps): React.JSX.Element {
   const doneRef = useRef(onDone)
   doneRef.current = onDone
 
@@ -24,7 +26,7 @@ export function Toast({message, onDone}: ToastProps): React.JSX.Element {
     return () => {
       clearTimeout(timer)
     }
-  }, [message])
+  }, [message, showId])
 
   return (
     <div

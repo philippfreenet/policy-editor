@@ -1,4 +1,4 @@
-import {Dialog, DialogPanel, DialogTitle} from '@headlessui/react'
+import {Description, Dialog, DialogPanel, DialogTitle} from '@headlessui/react'
 import {useRef} from 'react'
 
 interface ConfirmDialogProps {
@@ -30,7 +30,9 @@ export function ConfirmDialog({
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <DialogPanel className="w-full max-w-md rounded border border-line-strong bg-surface p-4 text-fg">
           <DialogTitle className="text-base font-semibold break-words">{title}</DialogTitle>
-          <div className="mt-2 break-words text-muted">{children}</div>
+          <Description as="div" className="mt-2 break-words text-muted">
+            {children}
+          </Description>
           <div className="mt-4 flex justify-end gap-2">
             <button
               className="min-h-6 rounded border border-line-strong px-3 py-1 outline-accent focus-visible:outline-2"

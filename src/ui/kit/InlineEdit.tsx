@@ -2,20 +2,21 @@ import {useEffect, useId, useRef, useState} from 'react'
 
 interface InlineEditProps {
   ariaLabel: string
-  /** Fehlermeldung unter dem Feld; hält das Feld nach einem abgelehnten Commit offen. */
-  error?: string | null
   mono?: boolean
   multiline?: false
-  onCommit: (value: string) => void
+  /** Übernimmt den Wert; liefert `null` bei Annahme oder eine Fehlermeldung bei Ablehnung. */
+  onCommit: (value: string) => string | null
   placeholder?: string
   size?: 'lg' | 'md'
   value: string
 }
 
-/** Text, der per Klick oder Enter zum Eingabefeld wird; Enter/Blur übernimmt, Escape verwirft. */
+/**
+ * Text, der per Klick oder Enter zum Eingabefeld wird. Enter/Blur übernimmt über `onCommit`;
+ * eine zurückgegebene Meldung hält das Feld mit dem Entwurf offen. Escape verwirft.
+ */
 export function InlineEdit({
   ariaLabel,
-  error = null,
   mono = false,
   onCommit,
   placeholder = '',
@@ -24,10 +25,8 @@ export function InlineEdit({
 }: InlineEditProps): React.JSX.Element {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(value)
+  const [message, setMessage] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  /* Verhindert doppelte Commits, wenn Enter/Escape das Feld entfernt und der Browser dabei blur meldet. */
-  const settledRef = useRef(false)
-  const committedRef = useRef<string | null>(null)
   const errorId = useId()
 
   useEffect(() => {
@@ -37,60 +36,38 @@ export function InlineEdit({
     }
   }, [editing])
 
-  /* Lehnt der Aufrufer den Wert ab (error gesetzt), bleibt das Feld mit dem Entwurf offen. */
-  useEffect(() => {
-    if (error !== null && committedRef.current !== null) {
-      settledRef.current = false
-      setEditing(true)
-    }
-  }, [error])
-
   const textClass = `${size === 'lg' ? 'text-base font-semibold' : ''} ${mono ? 'font-mono' : ''}`
+  const shown = value === '' ? placeholder : value
 
-  /** Öffnet das Feld mit dem aktuellen Wert als Entwurf. */
-  function open(): void {
-    settledRef.current = false
-    committedRef.current = null
-    setDraft(value)
-    setEditing(true)
+  /** Schließt das Feld und löscht die Meldung. */
+  function close(): void {
+    setMessage(null)
+    setEditing(false)
   }
 
-  /** Übernimmt den Entwurf, falls er sich vom Wert unterscheidet. */
+  /** Übernimmt den Entwurf, falls er sich vom Wert unterscheidet; bei Ablehnung bleibt das Feld offen. */
   function commit(): void {
-    if (settledRef.current) {
+    if (draft === value) {
+      close()
       return
     }
-    settledRef.current = true
-    setEditing(false)
-    if (draft !== value) {
-      committedRef.current = draft
-      onCommit(draft)
+    const rejection = onCommit(draft)
+    if (rejection === null) {
+      close()
+    } else {
+      setMessage(rejection)
     }
-  }
-
-  /** Verwirft den Entwurf. */
-  function discard(): void {
-    settledRef.current = true
-    committedRef.current = null
-    setEditing(false)
   }
 
   return (
     <div className="min-w-0">
       {editing ? (
         <input
-          aria-describedby={error === null ? undefined : errorId}
-          aria-invalid={error === null ? undefined : true}
+          aria-describedby={message === null ? undefined : errorId}
+          aria-invalid={message === null ? undefined : true}
           aria-label={ariaLabel}
-          className={`min-h-6 w-full rounded border bg-canvas px-1 text-fg outline-accent focus-visible:outline-2 ${error === null ? 'border-line-strong' : 'border-danger'} ${textClass}`}
-          onBlur={() => {
-            /* Nach einer Ablehnung ohne neue Eingabe schließt Blur nur, statt erneut abzulehnen. */
-            if (error !== null && draft === committedRef.current) {
-              discard()
-            } else {
-              commit()
-            }
-          }}
+          className={`min-h-6 w-full rounded border bg-canvas px-1 text-fg outline-accent focus-visible:outline-2 ${message === null ? 'border-line-strong' : 'border-danger'} ${textClass}`}
+          onBlur={commit}
           onChange={(event) => {
             setDraft(event.target.value)
           }}
@@ -100,7 +77,9 @@ export function InlineEdit({
               commit()
             } else if (event.key === 'Escape') {
               event.preventDefault()
-              discard()
+              /* Das Entfernen des Felds löst kein Blur-Commit mehr aus, weil der Entwurf zuerst zurückgesetzt wird. */
+              setDraft(value)
+              close()
             }
           }}
           placeholder={placeholder}
@@ -110,17 +89,21 @@ export function InlineEdit({
         />
       ) : (
         <button
-          aria-label={ariaLabel}
+          aria-label={`${ariaLabel}: ${shown}`}
           className={`-mx-1 min-h-6 max-w-full rounded px-1 text-left break-words outline-accent hover:bg-sidebar focus-visible:outline-2 ${value === '' ? 'text-muted' : 'text-fg'} ${textClass}`}
-          onClick={open}
+          onClick={() => {
+            setDraft(value)
+            setMessage(null)
+            setEditing(true)
+          }}
           type="button"
         >
-          {value === '' ? placeholder : value}
+          {shown}
         </button>
       )}
-      {error !== null && (
-        <p className="mt-1 break-words text-danger" id={errorId}>
-          {error}
+      {message !== null && (
+        <p className="mt-1 break-words text-danger" id={errorId} role="alert">
+          {message}
         </p>
       )}
     </div>

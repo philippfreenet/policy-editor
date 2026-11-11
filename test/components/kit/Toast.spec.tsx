@@ -31,4 +31,15 @@ describe('Toast', () => {
     clock.tick(5000)
     expect(onDone.called).to.equal(false)
   })
+
+  it('Erfolg: dieselbe Meldung mit neuer showId startet den Timer neu', () => {
+    const onDone = sinon.spy()
+    const {rerender} = render(<Toast message="Gespeichert" onDone={onDone} showId={1} />)
+    clock.tick(2000)
+    rerender(<Toast message="Gespeichert" onDone={onDone} showId={2} />)
+    clock.tick(2000)
+    expect(onDone.called).to.equal(false)
+    clock.tick(1000)
+    expect(onDone.calledOnce).to.equal(true)
+  })
 })

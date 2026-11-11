@@ -24,8 +24,8 @@ export function ActionMenu({items, label}: ActionMenuProps): React.JSX.Element {
         <span aria-hidden="true">⋯</span>
       </MenuButton>
       <MenuItems className="absolute right-0 z-30 mt-1 min-w-40 rounded border border-line-strong bg-surface py-1 outline-none">
-        {items.map((item) => (
-          <MenuItem disabled={item.disabled} key={item.label}>
+        {items.map((item, index) => (
+          <MenuItem disabled={item.disabled} key={index}>
             <button
               className={`block min-h-6 w-full px-3 py-1 text-left break-words data-focus:bg-sidebar data-focus:outline-2 data-focus:-outline-offset-2 data-focus:outline-accent data-disabled:opacity-50 ${item.danger === true ? 'text-danger' : 'text-fg'}`}
               onClick={item.onSelect}
