@@ -1,12 +1,6 @@
 import {useEffect, useRef, useState} from 'react'
 import {PROVIDER_CLASSES} from '../../constants.ts'
-import {
-  deleteProvider,
-  findProviderUsages,
-  OperationError,
-  renameProviderAt,
-  upsertProvider,
-} from '../../model/operations.ts'
+import {deleteProvider, findProviderUsages, renameProviderAt, upsertProvider} from '../../model/operations.ts'
 import type {Finding, PolicyFile, ProviderDef} from '../../model/PolicyTypes.ts'
 import type {EditorAction} from '../../state/editorReducer.ts'
 import {FieldFindings} from '../FieldFindings.tsx'
@@ -15,6 +9,7 @@ import {ConfirmDialog} from '../kit/ConfirmDialog.tsx'
 import {InlineEdit} from '../kit/InlineEdit.tsx'
 import {describeProvider} from '../logic/describeProvider.ts'
 import {findingsAt} from '../logic/findingsAt.ts'
+import {rejection} from '../logic/rejection.ts'
 import {ParamEditor} from '../ParamEditor.tsx'
 import {paramNameSuggestions} from '../paramNameSuggestions.ts'
 
@@ -52,9 +47,9 @@ function Block({children, field, label}: BlockProps): React.JSX.Element {
   )
 }
 
-/** Pluralform „1 Recht“ / „n Rechte“. */
-function rightsCount(args: {count: number}): string {
-  return `${args.count} ${args.count === 1 ? 'Recht' : 'Rechte'}`
+/** Begründung für das gesperrte Löschen („von 1 Recht“ / „von n Rechten“). */
+function usedReason(args: {count: number}): string {
+  return `Wird noch von ${args.count} ${args.count === 1 ? 'Recht' : 'Rechten'} verwendet`
 }
 
 /** Rechte Spalte der Provider-Ansicht: Satzbeschreibung, Felder, Parameter, Verwendung und Löschen. */
@@ -111,13 +106,9 @@ export function ProviderInspector({
 
   /** Benennt um (zieht Referenzen nach); eine abgelehnte Operation liefert ihre Meldung an das Feld zurück. */
   function rename(to: string): string | null {
-    try {
-      renameProviderAt({index, policy, to})
-    } catch (error) {
-      if (error instanceof OperationError) {
-        return error.message
-      }
-      throw error
+    const message = rejection({run: () => renameProviderAt({index, policy, to})})
+    if (message !== null) {
+      return message
     }
     dispatch({apply: (p) => renameProviderAt({index, policy: p, to}), type: 'edit'})
     return null
@@ -136,13 +127,21 @@ export function ProviderInspector({
           <FieldFindings findings={general} />
         </div>
         <ActionMenu
-          items={[{danger: true, disabled: used, label: 'Löschen…', onSelect: () => setDeleteOpen(true)}]}
+          items={[
+            {
+              danger: true,
+              describedBy: used ? `provider-${index}-reason` : undefined,
+              disabled: used,
+              label: 'Löschen…',
+              onSelect: () => setDeleteOpen(true),
+            },
+          ]}
           label="Aktionen für Provider"
         />
       </div>
       {used && (
-        <p className="pb-2 text-muted">
-          Löschen gesperrt: Wird noch von {rightsCount({count: usages.length})} verwendet
+        <p className="pb-2 text-muted" id={`provider-${index}-reason`}>
+          {usedReason({count: usages.length})}
         </p>
       )}
 
@@ -191,6 +190,7 @@ export function ProviderInspector({
         <div className="flex items-center gap-2">
           <button
             aria-checked={provider.negation === true}
+            aria-describedby={`provider-${index}-negation-hint`}
             aria-label="Negation"
             className={`relative inline-flex h-6 w-10 shrink-0 items-center rounded-full border border-line-strong outline-accent focus-visible:outline-2 focus-visible:outline-offset-2 ${provider.negation === true ? 'bg-accent' : 'bg-sidebar'}`}
             onClick={() => {
@@ -204,7 +204,9 @@ export function ProviderInspector({
               className={`size-4 rounded-full ${provider.negation === true ? 'translate-x-5 bg-on-accent' : 'translate-x-1 bg-line-strong'}`}
             />
           </button>
-          <span className="text-muted">Ergebnis des Providers umkehren</span>
+          <span className="text-muted" id={`provider-${index}-negation-hint`}>
+            Ergebnis des Providers umkehren
+          </span>
         </div>
         <FieldFindings findings={at('negation')} />
       </Block>

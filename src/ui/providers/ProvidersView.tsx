@@ -7,6 +7,9 @@ import {findingsAt} from '../logic/findingsAt.ts'
 import {uniqueName} from '../uniqueName.ts'
 import {ProviderInspector} from './ProviderInspector.tsx'
 
+const BUTTON =
+  'min-h-6 rounded border border-line-strong bg-surface px-2 py-0.5 outline-accent hover:bg-sidebar focus-visible:outline-2'
+
 interface ProvidersViewProps {
   dispatch: (action: EditorAction) => void
   findings: readonly Finding[]
@@ -106,8 +109,22 @@ export function ProvidersView({
         <p aria-live="polite" className="text-muted">
           {visible.length} von {total}
         </p>
-        {total === 0 && <p className="text-muted">Noch keine Provider.</p>}
-        {total > 0 && visible.length === 0 && <p className="text-muted">Keine Treffer.</p>}
+        {total === 0 && (
+          <div className="flex flex-col items-start gap-2">
+            <p className="text-muted">Noch keine Provider.</p>
+            <button className={BUTTON} onClick={create} type="button">
+              Ersten Provider anlegen
+            </button>
+          </div>
+        )}
+        {total > 0 && visible.length === 0 && (
+          <div className="flex flex-col items-start gap-2">
+            <p className="text-muted">Keine Treffer.</p>
+            <button className={BUTTON} onClick={() => setQuery('')} type="button">
+              Filter zurücksetzen
+            </button>
+          </div>
+        )}
         <ul
           aria-label="Provider"
           className="flex flex-col divide-y divide-line border-y border-line outline-accent focus-visible:outline-2"

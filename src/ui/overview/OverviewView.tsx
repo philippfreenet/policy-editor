@@ -69,7 +69,7 @@ export function OverviewView({onOpenRight, policy}: OverviewViewProps): React.JS
                     return (
                       <td className="p-0.5" key={c}>
                         <button
-                          aria-label={`${role} in ${channel}: ${count} Rechte`}
+                          aria-label={`${role} in ${channel}: ${count} ${count === 1 ? 'Recht' : 'Rechte'}`}
                           aria-pressed={active}
                           className={`min-h-6 w-full min-w-12 rounded border px-2 py-1 text-right tabular-nums outline-accent hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 ${SHADES[level]} ${
                             active ? 'border-accent ring-1 ring-accent' : 'border-line'

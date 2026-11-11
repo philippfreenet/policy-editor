@@ -1,4 +1,4 @@
-import {cleanup, render, screen, within} from '@testing-library/react'
+import {cleanup, render, screen, waitFor, within} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import {expect} from 'chai'
 import {useReducer} from 'react'
@@ -102,8 +102,11 @@ describe('ChannelsView', () => {
     await user.type(screen.getByRole('textbox', {name: 'Channel hinzufügen'}), 'LEER')
     await user.click(screen.getByRole('button', {name: 'Hinzufügen'}))
     await user.click(screen.getByRole('button', {name: 'Channel LEER löschen'}))
+    expect(latest.policy?.channels).to.include('LEER')
+    expect(screen.getByText('Channel LEER löschen?')).to.exist
+    await user.click(screen.getByRole('button', {name: 'Löschen'}))
     expect(latest.policy?.channels).to.not.include('LEER')
-    expect(document.activeElement?.id).to.equal('channels-list')
+    await waitFor(() => expect(document.activeElement?.id).to.equal('channels-list'))
   })
 
   it('Erfolg: Klick auf den Zähler klappt die Rechte auf; Klick auf ein Recht ruft onOpenRight', async () => {

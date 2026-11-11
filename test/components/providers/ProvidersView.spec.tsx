@@ -121,11 +121,45 @@ describe('ProvidersView', () => {
     const {latest} = setup({index})
     const policy = latest.policy as PolicyFile
     const count = findProviderUsages({name: policy.providers[index]?.name ?? '', policy}).length
-    expect(screen.getByText(new RegExp(`Wird noch von ${count} ${count === 1 ? 'Recht' : 'Rechte'} verwendet`))).to
+    expect(screen.getByText(new RegExp(`Wird noch von ${count} ${count === 1 ? 'Recht' : 'Rechten'} verwendet`))).to
       .exist
     await user.click(screen.getByRole('button', {name: 'Aktionen für Provider'}))
     const item = screen.getByRole('menuitem', {name: 'Löschen…'})
     expect(item.hasAttribute('disabled') || item.getAttribute('aria-disabled') === 'true').to.equal(true)
+    const reason = document.getElementById(item.getAttribute('aria-describedby') ?? '')
+    expect(reason?.textContent).to.match(/^Wird noch von \d+ Rechte?n? verwendet$/)
+  })
+
+  it('Erfolg: Negations-Schalter ist mit seiner Erklärung verknüpft', () => {
+    setup({index: 4})
+    const hint = document.getElementById(
+      screen.getByRole('switch', {name: 'Negation'}).getAttribute('aria-describedby') ?? '',
+    )
+    expect(hint?.textContent?.trim()).to.equal('Ergebnis des Providers umkehren')
+  })
+
+  it('Erfolg: ohne Provider erscheint „Noch keine Provider.“ mit „Ersten Provider anlegen“', async () => {
+    const user = userEvent.setup()
+    const {latest} = setup({
+      index: null,
+      text: fixtureText({
+        tweak: (p) => {
+          p.providers = []
+          p.rights = []
+        },
+      }),
+    })
+    expect(screen.getByText('Noch keine Provider.')).to.exist
+    await user.click(screen.getByRole('button', {name: 'Ersten Provider anlegen'}))
+    expect(latest.policy?.providers).to.have.length(1)
+  })
+
+  it('Erfolg: „Filter zurücksetzen“ leert die Suche nach Keine Treffer', async () => {
+    const user = userEvent.setup()
+    setup()
+    await user.type(screen.getByRole('searchbox', {name: 'Provider suchen'}), 'xyz-gibt-es-nicht')
+    await user.click(screen.getByRole('button', {name: 'Filter zurücksetzen'}))
+    expect((screen.getByRole('searchbox', {name: 'Provider suchen'}) as HTMLInputElement).value).to.equal('')
   })
 
   it('Erfolg: Löschen eines unbenutzten Providers nach Bestätigung; Inspektor zeigt Leerzustand', async () => {
@@ -169,7 +203,7 @@ describe('ProvidersView', () => {
     const user = userEvent.setup()
     setup()
     await user.type(screen.getByRole('searchbox', {name: 'Provider suchen'}), 'Kein_Mitarbeiter')
-    expect(screen.getByText('1 von 48')).to.exist
+    expect(screen.getByText(`1 von ${loadFixturePolicy().providers.length}`)).to.exist
     await user.clear(screen.getByRole('searchbox', {name: 'Provider suchen'}))
     await user.type(screen.getByRole('searchbox', {name: 'Provider suchen'}), 'xyz-gibt-es-nicht')
     expect(screen.getByText('Keine Treffer.')).to.exist

@@ -2,6 +2,8 @@ import {Menu, MenuButton, MenuItem, MenuItems} from '@headlessui/react'
 
 interface ActionMenuItem {
   danger?: boolean
+  /** Id eines Elements, das den Eintrag erklärt (z. B. die Begründung für „deaktiviert“). */
+  describedBy?: string
   disabled?: boolean
   label: string
   onSelect: () => void
@@ -27,6 +29,7 @@ export function ActionMenu({items, label}: ActionMenuProps): React.JSX.Element {
         {items.map((item, index) => (
           <MenuItem disabled={item.disabled} key={index}>
             <button
+              aria-describedby={item.describedBy}
               className={`block min-h-6 w-full px-3 py-1 text-left break-words data-focus:bg-sidebar data-focus:outline-2 data-focus:-outline-offset-2 data-focus:outline-accent data-disabled:opacity-50 ${item.danger === true ? 'text-danger' : 'text-fg'}`}
               onClick={item.onSelect}
               type="button"

@@ -33,4 +33,11 @@ describe('OverviewView', () => {
     render(<OverviewView onOpenRight={() => undefined} policy={{...POLICY, channels: []}} />)
     expect(screen.getByText('Noch keine Channels angelegt.')).to.exist
   })
+
+  it('Erfolg: Zellen mit genau einem Recht heißen „1 Recht“', () => {
+    const policy = loadFixturePolicy()
+    policy.rights = [{channels: ['APP'], description: '', name: 'Eins', roles: ['SYSTEM']}]
+    render(<OverviewView onOpenRight={() => undefined} policy={policy} />)
+    expect(screen.getByRole('button', {name: 'SYSTEM in APP: 1 Recht'})).to.exist
+  })
 })

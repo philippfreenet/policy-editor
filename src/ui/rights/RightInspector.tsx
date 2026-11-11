@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from 'react'
 import {USER_ROLES} from '../../constants.ts'
-import {deleteRight, moveRight, OperationError, upsertRight} from '../../model/operations.ts'
+import {deleteRight, moveRight, upsertRight} from '../../model/operations.ts'
 import type {Finding, PolicyFile, RightDef} from '../../model/PolicyTypes.ts'
 import type {EditorAction} from '../../state/editorReducer.ts'
 import {ConditionBuilder} from '../condition/ConditionBuilder.tsx'
@@ -9,7 +9,9 @@ import {Chip} from '../kit/Chip.tsx'
 import {ChipSelect} from '../kit/ChipSelect.tsx'
 import {ConfirmDialog} from '../kit/ConfirmDialog.tsx'
 import {InlineEdit} from '../kit/InlineEdit.tsx'
+import {FieldFindings} from '../FieldFindings.tsx'
 import {findingsAt} from '../logic/findingsAt.ts'
+import {rejection} from '../logic/rejection.ts'
 
 const CHANNEL_LIMIT = 6
 
@@ -50,26 +52,6 @@ function mergeChannelSelection(args: {current: readonly string[]; known: readonl
 /** Entfernt genau den Eintrag an der Position aus der Liste. */
 function withoutAt(args: {index: number; list: readonly string[]}): string[] {
   return args.list.filter((_, i) => i !== args.index)
-}
-
-interface FieldFindingsProps {
-  findings: readonly Finding[]
-}
-
-/** Befundmeldungen direkt am Feld. */
-function FieldFindings({findings}: FieldFindingsProps): React.JSX.Element | null {
-  if (findings.length === 0) {
-    return null
-  }
-  return (
-    <ul className="mt-1 flex flex-col gap-0.5">
-      {findings.map((f, i) => (
-        <li className={`break-words ${f.severity === 'error' ? 'text-danger' : 'text-warn'}`} key={i}>
-          {f.message}
-        </li>
-      ))}
-    </ul>
-  )
 }
 
 interface RowProps {
@@ -161,13 +143,9 @@ export function RightInspector({
 
   /** Benennt um; eine abgelehnte Operation liefert ihre Meldung an das Feld zurück. */
   function rename(name: string): string | null {
-    try {
-      upsertRight({index, policy, right: {...right, name}})
-    } catch (error) {
-      if (error instanceof OperationError) {
-        return error.message
-      }
-      throw error
+    const message = rejection({run: () => upsertRight({index, policy, right: {...right, name}})})
+    if (message !== null) {
+      return message
     }
     update({change: (r) => ({...r, name})})
     return null
