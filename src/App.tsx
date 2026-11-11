@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react'
 import {serializePolicy} from './model/serialize.ts'
 import {useEditor} from './state/useEditor.ts'
-import {ChannelsTab} from './ui/ChannelsTab.tsx'
+import {ChannelsView} from './ui/channels/ChannelsView.tsx'
 import {downloadText} from './ui/download.ts'
 import {ConfirmDialog} from './ui/kit/ConfirmDialog.tsx'
 import {Toast} from './ui/kit/Toast.tsx'
@@ -9,8 +9,8 @@ import {changedRights} from './ui/logic/changedRights.ts'
 import {viewTarget} from './ui/logic/viewTarget.ts'
 import type {View} from './ui/logic/viewTarget.ts'
 import {loadSucceeds} from './ui/loadSucceeds.ts'
-import {MatrixTab} from './ui/MatrixTab.tsx'
-import {ProvidersTab} from './ui/ProvidersTab.tsx'
+import {OverviewView} from './ui/overview/OverviewView.tsx'
+import {ProvidersView} from './ui/providers/ProvidersView.tsx'
 import {RightsView} from './ui/rights/RightsView.tsx'
 import {AppShell} from './ui/shell/AppShell.tsx'
 import {DiffDialog} from './ui/shell/DiffDialog.tsx'
@@ -127,7 +127,6 @@ export function App(): React.JSX.Element {
   const findings = state.findings
   const errorCount = findings.filter((f) => f.severity === 'error').length
   const warningCount = findings.length - errorCount
-  const selectedIndex = selection?.index ?? null
   const changed = changedRights({original: state.original, policy})
   const showUnknownFieldHint = state.parseFindings.some((f) => f.message.startsWith('Unbekanntes Feld'))
 
@@ -144,6 +143,12 @@ export function App(): React.JSX.Element {
       return
     }
     doDownload()
+  }
+
+  /** Öffnet ein Recht im Inspektor der Rechte-Ansicht (jedes Mal mit frischem Auswahl-Objekt). */
+  function openRight(index: number): void {
+    setView('rights')
+    setSelection({field: null, index})
   }
 
   /** Springt zur Ansicht und zum Eintrag eines Befunds. */
@@ -202,20 +207,28 @@ export function App(): React.JSX.Element {
           />
         }
       >
-        {view === 'channels' && <ChannelsTab dispatch={dispatch} policy={policy} selected={selectedIndex} />}
-        {view === 'providers' && <ProvidersTab dispatch={dispatch} policy={policy} selected={selectedIndex} />}
+        {view === 'channels' && (
+          <ChannelsView
+            dispatch={dispatch}
+            findings={findings}
+            onOpenRight={openRight}
+            policy={policy}
+            selection={selection}
+          />
+        )}
+        {view === 'providers' && (
+          <ProvidersView
+            dispatch={dispatch}
+            findings={findings}
+            onOpenRight={openRight}
+            policy={policy}
+            selection={selection}
+          />
+        )}
         {view === 'rights' && (
           <RightsView changed={changed} dispatch={dispatch} findings={findings} policy={policy} selection={selection} />
         )}
-        {view === 'overview' && (
-          <MatrixTab
-            onOpenRight={(index) => {
-              setView('rights')
-              setSelection({field: null, index})
-            }}
-            policy={policy}
-          />
-        )}
+        {view === 'overview' && <OverviewView onOpenRight={openRight} policy={policy} />}
       </AppShell>
       {diffOpen && (
         <DiffDialog

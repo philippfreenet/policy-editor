@@ -1,8 +1,10 @@
 import {useRef} from 'react'
 import type {ParamDef} from '../model/PolicyTypes.ts'
 import {ParamRow} from './ParamRow.tsx'
-import {BUTTON} from './styles.ts'
 import {uniqueName} from './uniqueName.ts'
+
+const BUTTON =
+  'min-h-6 rounded border border-line-strong bg-surface px-2 py-0.5 outline-accent hover:bg-sidebar focus-visible:outline-2'
 
 interface ParamEditorProps {
   idPrefix: string
@@ -29,14 +31,14 @@ export function ParamEditor({idPrefix, onChange, params, suggestions}: ParamEdit
   }
 
   return (
-    <fieldset className="flex flex-col gap-2">
-      <legend className="text-sm font-medium text-slate-900">Parameter</legend>
+    <fieldset className="flex min-w-0 flex-col gap-2">
+      <legend className="text-xs font-semibold tracking-wide text-muted uppercase">Parameter</legend>
       <datalist id={listId}>
         {suggestions.map((name) => (
           <option key={name} value={name} />
         ))}
       </datalist>
-      {params.length === 0 && <p className="text-xs text-slate-700">Keine Parameter.</p>}
+      {params.length === 0 && <p className="text-muted">Keine Parameter.</p>}
       <ul className="flex flex-col gap-2">
         {params.map((param, i) => (
           <ParamRow

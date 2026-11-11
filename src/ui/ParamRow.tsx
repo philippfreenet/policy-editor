@@ -2,7 +2,12 @@ import {useState} from 'react'
 import type {ParamDef, Scalar} from '../model/PolicyTypes.ts'
 import {convertValues, droppedValues, valueType} from './convertValues.ts'
 import type {ValueType} from './convertValues.ts'
-import {BUTTON, BUTTON_DANGER, INPUT} from './styles.ts'
+
+const BUTTON =
+  'min-h-6 rounded border border-line-strong bg-surface px-2 py-0.5 outline-accent hover:bg-sidebar focus-visible:outline-2'
+const BUTTON_DANGER =
+  'min-h-6 rounded border border-line-strong bg-surface px-2 py-0.5 text-danger outline-accent hover:bg-danger-soft focus-visible:outline-2'
+const INPUT = 'min-h-6 rounded border border-line-strong bg-canvas px-2 text-fg outline-accent focus-visible:outline-2'
 
 interface ParamRowProps {
   listId: string
@@ -46,10 +51,10 @@ export function ParamRow({listId, onChange, onRemove, param, rowId}: ParamRowPro
   }
 
   return (
-    <li className="flex flex-col gap-2 rounded-md border border-slate-300 bg-slate-50 p-2">
+    <li className="flex flex-col gap-2 rounded border border-line bg-sidebar p-2">
       <div className="flex flex-wrap items-end gap-2">
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-slate-800" htmlFor={`${rowId}-name`}>
+          <label className="text-xs text-muted" htmlFor={`${rowId}-name`}>
             Parametername
           </label>
           <input
@@ -62,7 +67,7 @@ export function ParamRow({listId, onChange, onRemove, param, rowId}: ParamRowPro
           />
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-slate-800" htmlFor={`${rowId}-type`}>
+          <label className="text-xs text-muted" htmlFor={`${rowId}-type`}>
             Werttyp
           </label>
           <select
@@ -102,16 +107,16 @@ export function ParamRow({listId, onChange, onRemove, param, rowId}: ParamRowPro
         </button>
       </div>
       <ul aria-label={`Werte von ${param.name}`} className="flex flex-wrap gap-1.5">
-        {param.values.length === 0 && <li className="text-xs text-slate-700">Keine Werte.</li>}
+        {param.values.length === 0 && <li className="text-muted">Keine Werte.</li>}
         {param.values.map((value, i) => (
           <li
-            className="flex items-center gap-1 rounded-full border border-slate-400 bg-white py-0.5 pr-1 pl-2.5 font-mono text-xs text-slate-900"
+            className="flex min-w-0 items-center gap-1 rounded-full bg-where text-where-fg py-0.5 pr-1 pl-2.5 font-mono break-all"
             key={`${String(value)}-${i}`}
           >
             {String(value)}
             <button
               aria-label={`Wert ${String(value)} entfernen`}
-              className="flex h-6 w-6 items-center justify-center rounded-full text-sm leading-none text-slate-800 hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-indigo-700"
+              className="flex size-6 shrink-0 items-center justify-center rounded-full leading-none text-fg outline-accent hover:bg-line focus-visible:outline-2"
               onClick={() => onChange({...param, values: param.values.filter((_, j) => j !== i)})}
               type="button"
             >
@@ -153,7 +158,7 @@ export function ParamRow({listId, onChange, onRemove, param, rowId}: ParamRowPro
           Wert hinzufügen
         </button>
         {problem !== null && (
-          <span className="text-xs text-red-900" id={`${rowId}-problem`} role="alert">
+          <span className="text-danger" id={`${rowId}-problem`} role="alert">
             {problem}
           </span>
         )}
