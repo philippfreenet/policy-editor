@@ -1,1 +1,5 @@
-{"node-option": ["import=tsx"], "spec": "test/units/**/*.spec.ts"}
+{
+  "node-option": ["import=./test/setup/register.mjs"],
+  "require": ["test/setup/dom.ts"],
+  "spec": ["test/**/*.spec.ts", "test/**/*.spec.tsx"]
+}
