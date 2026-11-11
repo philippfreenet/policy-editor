@@ -30,7 +30,7 @@ export function ConditionGroup({group, onChange, path, providers, root}: Conditi
   return (
     <div
       aria-label={`Gruppe ${label}`}
-      className="flex flex-col gap-2 rounded-md border border-slate-400 bg-slate-50 p-3"
+      className="flex flex-col gap-2 rounded-md border border-slate-400 bg-slate-50 p-2"
       role="group"
     >
       <div className="flex flex-wrap items-center gap-2">
@@ -87,7 +87,7 @@ export function ConditionGroup({group, onChange, path, providers, root}: Conditi
       {group.conditions.length === 0 && (
         <p className="text-xs text-red-800">Leere Gruppe: Provider oder Untergruppe hinzufügen.</p>
       )}
-      <ul className="flex flex-col gap-2 border-l-2 border-slate-300 pl-3">
+      <ul className="flex flex-col gap-2 border-l-2 border-slate-300 pl-2">
         {group.conditions.map((child, index) => {
           const childPath = [...path, index]
           const childLabel = childPath.map((i) => i + 1).join('.')
