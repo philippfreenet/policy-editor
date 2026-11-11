@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react'
+import {useCallback, useState} from 'react'
 import {serializePolicy} from './model/serialize.ts'
 import {useEditor} from './state/useEditor.ts'
 import {ChannelsView} from './ui/channels/ChannelsView.tsx'
@@ -18,7 +18,7 @@ import {FindingsDrawer} from './ui/shell/FindingsDrawer.tsx'
 import {Sidebar} from './ui/shell/Sidebar.tsx'
 import {StartScreen} from './ui/shell/StartScreen.tsx'
 import {TopBar} from './ui/shell/TopBar.tsx'
-import {undoShortcut} from './ui/undoShortcut.ts'
+import {useShortcuts} from './ui/useShortcuts.ts'
 
 const DISCARD_TEXT = 'Ungespeicherte Änderungen gehen verloren. Trotzdem fortfahren?'
 const CONFIRM_TEXT = 'Die Datei enthält Fehler, die den Start des policy-service verhindern. Trotzdem herunterladen?'
@@ -45,21 +45,31 @@ export function App(): React.JSX.Element {
   const editing = state.policy !== null && !reloading
   const dialogOpen = diffOpen || findingsOpen || confirmDownload || pendingDiscard !== null
 
-  /* Tastenkürzel für Rückgängig/Wiederholen; Textfelder behalten ihr eigenes Undo */
-  useEffect(() => {
-    if (!editing || dialogOpen) {
-      return undefined
+  /** Fokussiert das Suchfeld der aktuellen Ansicht (Channels und Übersicht haben keines). */
+  const focusSearch = useCallback((): void => {
+    const label = view === 'rights' ? 'Rechte suchen' : view === 'providers' ? 'Provider suchen' : null
+    if (label !== null) {
+      document.querySelector<HTMLInputElement>(`input[aria-label="${label}"]`)?.focus()
     }
-    const onKeyDown = (event: KeyboardEvent): void => {
-      const action = undoShortcut({event})
-      if (action !== null) {
-        event.preventDefault()
-        dispatch({type: action})
-      }
+  }, [view])
+
+  /* Die Ansichten halten ihre Auswahl selbst: das Kürzel klickt den Nachbar-Eintrag der sichtbaren (gefilterten) Liste */
+  const moveSelection = useCallback((delta: -1 | 1): void => {
+    const list = document.activeElement?.closest('#rights-list, #providers-list')
+    if (list === null || list === undefined) {
+      return
     }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [dispatch, dialogOpen, editing])
+    const items = [...list.querySelectorAll<HTMLButtonElement>('li > button')]
+    const current = items.findIndex((item) => item.contains(document.activeElement))
+    const next = current === -1 ? (delta === 1 ? 0 : items.length - 1) : current + delta
+    const target = items[next]
+    if (target !== undefined) {
+      target.focus()
+      target.click()
+    }
+  }, [])
+
+  useShortcuts({dispatch, enabled: editing && !dialogOpen, onFocusSearch: focusSearch, onMoveSelection: moveSelection})
 
   /** Führt die Aktion aus; weicht die Policy von der geladenen Datei ab, erst nach Bestätigung im Dialog. */
   function runUnlessDiscarding(action: () => void): void {

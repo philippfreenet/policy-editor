@@ -1,8 +1,9 @@
-import {cleanup, render, screen} from '@testing-library/react'
+import {cleanup, render, screen, within} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import {expect} from 'chai'
 import sinon from 'sinon'
 import {App} from '../../src/App.tsx'
+import {FIXTURE_TEXT} from './loadFixture.ts'
 
 describe('App', () => {
   let createUrl: sinon.SinonStub
@@ -66,5 +67,19 @@ describe('App', () => {
     await userEvent.click(screen.getByRole('button', {name: 'Verwerfen'}))
     expect(screen.queryByLabelText('Oder JSON einfügen')).to.equal(null)
     expect(screen.getByRole('navigation', {name: 'Bereiche'})).to.not.equal(null)
+  })
+
+  it('Erfolg: „/“ fokussiert die Suche, Pfeil runter wählt den nächsten Eintrag der Liste', async () => {
+    render(<App />)
+    await userEvent.click(screen.getByLabelText('Oder JSON einfügen'))
+    await userEvent.paste(FIXTURE_TEXT)
+    await userEvent.click(screen.getByRole('button', {name: 'Laden'}))
+    await userEvent.keyboard('/')
+    expect(document.activeElement).to.equal(screen.getByLabelText('Rechte suchen'))
+    const items = within(screen.getByRole('list', {name: 'Rechte'})).getAllByRole('button')
+    items[0]?.focus()
+    await userEvent.keyboard('{ArrowDown}')
+    expect(document.activeElement).to.equal(items[1])
+    expect(items[1]?.getAttribute('aria-current')).to.equal('true')
   })
 })

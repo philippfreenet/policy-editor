@@ -26,13 +26,15 @@ Für den statischen Produktions-Build: `npm run build`, danach `npm run preview`
 
 ## Funktionen
 
-- Tabs für Channels, Provider und Rechte; Umbenennen und Löschen berücksichtigt Verwendungen, damit keine verwaisten Referenzen entstehen
-- Baumeditor für rekursive Bedingungen (`AND` / `OR`, Provider-Namen und verschachtelte Gruppen)
-- Bedingungen zusätzlich als lesbare Formel, z. B. `Vertrag_aktiv AND (A OR B)`, im Formular und in der Rechteliste
-- Rechteliste filterbar nach Text, Rolle, Channel und Provider (in beliebiger Tiefe der Bedingung)
-- Tab „Übersicht“: Matrix Rolle × Channel mit der Anzahl der Rechte je Zelle; eine Zelle listet ihre Rechte mit Bedingung und öffnet sie per Klick
-- Rückgängig/Wiederholen (bis 100 Schritte) über Kopfzeile oder `Strg/⌘+Z`, `Strg/⌘+⇧+Z`, `Strg+Y`; Tippen in einem Beschreibungsfeld zählt als ein Schritt, in Textfeldern bleibt das Rückgängig des Browsers aktiv
-- Validierung nach den Regeln des Starts von `DatabaseService` im `policy-service`; Befunde tragen einen Pfad, über den die UI zur Stelle springt
+- Seitenleiste mit den Bereichen Rechte, Provider, Channels und Übersicht; Umbenennen und Löschen berücksichtigt Verwendungen, damit keine verwaisten Referenzen entstehen
+- Inspektor je Recht nach „Wer · Wo · Wann“: Rollen, Channels und Bedingung; Bedingungen mit `AND` / `OR`, verschachtelten Gruppen und Provider-Suche im Block-Editor, zusätzlich als lesbare Formel, z. B. `Vertrag_aktiv AND (A OR B)`
+- Rechteliste durchsuchbar mit Freitext und den Schlüsseln `rolle:`, `channel:` und `provider:` (in beliebiger Tiefe der Bedingung), zusätzlich über Filtermenüs
+- Provider-Inspektor mit Parametern und den Rechten, die den Provider verwenden
+- Ansicht „Übersicht“: Matrix Rolle × Channel mit der Anzahl der Rechte je Zelle; eine Zelle listet ihre Rechte mit Bedingung und öffnet sie per Klick
+- Tastenkürzel: `/` springt in die Suche der aktuellen Ansicht, `↑` / `↓` verschieben die Auswahl in der Rechte- und Providerliste (Fokus in der Liste), `Strg/⌘+Z`, `Strg/⌘+⇧+Z`, `Strg+Y` für Rückgängig/Wiederholen (bis 100 Schritte, auch über die Kopfleiste); in Textfeldern und bei offenem Dialog greift kein Kürzel, dort bleibt das Rückgängig des Browsers aktiv
+- Bestätigungsdialoge vor dem Löschen, vor dem Verwerfen ungespeicherter Änderungen und vor dem Herunterladen einer Datei mit Fehlern
+- Dunkelmodus folgt der Systemeinstellung (`prefers-color-scheme`); Animationen entfallen bei `prefers-reduced-motion`
+- Validierung nach den Regeln des Starts von `DatabaseService` im `policy-service`; Befunde tragen einen Pfad, über den die UI zur Stelle springt (Prüf-Panel)
 - Diff gegen die geladene Datei
 - Das Schreiben folgt der festen Feldreihenfolge der `policy.json`, damit Änderungen minimale Diffs erzeugen
 - Autosave des Bearbeitungsstands im `localStorage` des Browsers
@@ -46,10 +48,12 @@ Die Liste der Rollen (`USER_ROLES`) und die Liste der Provider-Klassen (`PROVIDE
 ```bash
 npm run typecheck     # tsc -b (src und test)
 npm run check-format  # Prettier prüfen (npm run format zum Formatieren)
-npm test              # Mocha, test/units/**/*.spec.ts
+npm test              # Mocha: Unit-Tests (test/units) und Komponententests (test/components)
 npm run coverage      # Branch-Coverage des Modells (src/model), Ziel mindestens 80 %
 npm audit
 ```
+
+Die Oberfläche nutzt `@headlessui/react` (Dialoge, Menüs); die Komponententests laufen mit Testing Library (`@testing-library/react`, `@testing-library/user-event`) in `jsdom` (`global-jsdom`).
 
 `package.json` pinnt per `overrides` `glob` und `minimatch` auf nicht verwundbare Versionen, weil `mocha` und `c8` (über `test-exclude`) sonst ältere, für Denial of Service anfällige Versionen mitbringen (Stand 11/2026, mit entferntem Override meldet `npm audit` 5 Schwachstellen). Die Overrides können entfallen, sobald `mocha` und `c8` ohne sie auf unbedenkliche Versionen auflösen; das prüft man, indem man sie entfernt, neu installiert und `npm audit` ausführt.
 
@@ -68,7 +72,9 @@ src/
 ├── state/         # Editor-Reducer, useEditor, Autosave
 └── ui/            # React-Komponenten und UI-Hilfsfunktionen
 test/
+├── components/    # Komponententests (Testing Library, jsdom)
 ├── fixtures/      # policy-prod.json, policy-test.json
+├── setup/         # jsdom-Einrichtung für Mocha
 └── units/         # Mocha-Tests, spiegeln src/
 ```
 

@@ -10,7 +10,7 @@ interface ShortcutEvent {
 const TEXT_INPUT_TYPES = new Set(['email', 'number', 'password', 'search', 'tel', 'text', 'url'])
 
 /** Prüft, ob das Ziel ein Textfeld ist, das sein eigenes Rückgängig braucht. */
-function isTextField(target: EventTarget | null): boolean {
+export function isTextField(target: EventTarget | null): boolean {
   if (typeof target !== 'object' || target === null || !('tagName' in target)) {
     return false
   }
