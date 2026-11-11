@@ -29,7 +29,9 @@ export function ProvidersTab({dispatch, policy, selected}: ProvidersTabProps): R
     if (open !== null) {
       document.getElementById(`provider-item-${open}`)?.scrollIntoView({block: 'nearest'})
       /* Im gestapelten Layout (schmal) liegt das Formular unter der Liste und wird ins Bild geholt */
-      document.getElementById('provider-form-panel')?.scrollIntoView({block: 'nearest'})
+      if (!window.matchMedia('(min-width: 1024px)').matches) {
+        document.getElementById('provider-form-panel')?.scrollIntoView({block: 'nearest'})
+      }
     }
   }, [open])
 
