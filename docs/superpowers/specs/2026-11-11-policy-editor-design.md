@@ -132,7 +132,7 @@ test/units/                   spiegelt src/
 `model/` ist frei von React und vollständig unit-getestet; die UI ruft ausschließlich `operations.ts`
 über den Reducer auf.
 
-**Serialisierungsstil:** 2 Leerzeichen Einrückung, `": "` als Trenner, kein abschließender Zeilenumbruch
+**Serialisierungsstil:** 2 Leerzeichen Einrückung, `": "` als Trenner, genau ein abschließender Zeilenumbruch
 nach der letzten `}` (wie die bestehende Datei; der Round-Trip-Test legt das exakt fest). Ein Wert wird
 einzeilig geschrieben, wenn er ein Array aus Skalaren ist oder ein Objekt, dessen Werte ausschließlich
 Skalare, Arrays aus Skalaren oder (bei Bedingungen) Provider-Namen sind; alles andere mehrzeilig.
