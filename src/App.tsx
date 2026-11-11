@@ -1,32 +1,45 @@
 import {useEffect, useState} from 'react'
 import {serializePolicy} from './model/serialize.ts'
 import {useEditor} from './state/useEditor.ts'
-import {DiffDialog} from './ui/DiffDialog.tsx'
-import {downloadText} from './ui/download.ts'
 import {ChannelsTab} from './ui/ChannelsTab.tsx'
-import {ErrorBox} from './ui/ErrorBox.tsx'
-import {Header} from './ui/Header.tsx'
-import {LoadScreen} from './ui/LoadScreen.tsx'
-import {MatrixTab} from './ui/MatrixTab.tsx'
-import {undoShortcut} from './ui/undoShortcut.ts'
+import {downloadText} from './ui/download.ts'
+import {ConfirmDialog} from './ui/kit/ConfirmDialog.tsx'
+import {Toast} from './ui/kit/Toast.tsx'
+import {changedRights} from './ui/logic/changedRights.ts'
+import {viewTarget} from './ui/logic/viewTarget.ts'
+import type {View} from './ui/logic/viewTarget.ts'
 import {loadSucceeds} from './ui/loadSucceeds.ts'
-import {parseFindingPath} from './ui/pathTarget.ts'
-import type {Selection, TabId} from './ui/Selection.ts'
+import {MatrixTab} from './ui/MatrixTab.tsx'
 import {ProvidersTab} from './ui/ProvidersTab.tsx'
 import {RightsTab} from './ui/RightsTab.tsx'
-import {TabBar} from './ui/TabBar.tsx'
-import {ValidationPanel} from './ui/ValidationPanel.tsx'
+import {AppShell} from './ui/shell/AppShell.tsx'
+import {DiffDialog} from './ui/shell/DiffDialog.tsx'
+import {FindingsDrawer} from './ui/shell/FindingsDrawer.tsx'
+import {Sidebar} from './ui/shell/Sidebar.tsx'
+import {StartScreen} from './ui/shell/StartScreen.tsx'
+import {TopBar} from './ui/shell/TopBar.tsx'
+import {undoShortcut} from './ui/undoShortcut.ts'
 
 const DISCARD_TEXT = 'Ungespeicherte Änderungen gehen verloren. Trotzdem fortfahren?'
 const CONFIRM_TEXT = 'Die Datei enthält Fehler, die den Start des policy-service verhindern. Trotzdem herunterladen?'
 
-/** Wurzel der Anwendung: Ladeansicht oder Editor mit Kopfzeile, Tabs und Prüfergebnis. */
+/** Ausgewählter Eintrag (und ggf. Feld) innerhalb der aktuellen Ansicht. */
+interface EntrySelection {
+  field: string | null
+  index: number | null
+}
+
+/** Wurzel der Anwendung: Startbildschirm oder Editor mit Seitenleiste, Kopfleiste und Prüf-Panel. */
 export function App(): React.JSX.Element {
   const {dispatch, state} = useEditor()
   const [reloading, setReloading] = useState(false)
-  const [showDiff, setShowDiff] = useState(false)
-  const [tab, setTab] = useState<TabId>('channels')
-  const [selected, setSelected] = useState<Selection | null>(null)
+  const [diffOpen, setDiffOpen] = useState(false)
+  const [findingsOpen, setFindingsOpen] = useState(false)
+  const [view, setView] = useState<View>('overview')
+  const [selection, setSelection] = useState<EntrySelection | null>(null)
+  const [pendingDiscard, setPendingDiscard] = useState<(() => void) | null>(null)
+  const [confirmDownload, setConfirmDownload] = useState(false)
+  const [toast, setToast] = useState<{id: number; message: string} | null>(null)
 
   const clearError = (): void => dispatch({type: 'clearError'})
   const editing = state.policy !== null && !reloading
@@ -47,39 +60,65 @@ export function App(): React.JSX.Element {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [dispatch, editing])
 
-  /** Fragt nach, wenn die aktuelle Policy von der geladenen Datei abweicht; true bedeutet: fortfahren. */
-  function confirmDiscard(): boolean {
+  /** Führt die Aktion aus; weicht die Policy von der geladenen Datei ab, erst nach Bestätigung im Dialog. */
+  function runUnlessDiscarding(action: () => void): void {
     if (state.policy === null || serializePolicy({policy: state.policy}) === (state.original ?? '')) {
-      return true
+      action()
+      return
     }
-    return window.confirm(DISCARD_TEXT)
+    setPendingDiscard(() => action)
   }
+
+  /** Lädt Text als neue Policy und kehrt bei Erfolg in den Editor zurück. */
+  function load(text: string): void {
+    runUnlessDiscarding(() => {
+      dispatch({text, type: 'load'})
+      if (loadSucceeds({text})) {
+        setReloading(false)
+        setSelection(null)
+        setView('overview')
+      }
+    })
+  }
+
+  const discardDialog = (
+    <ConfirmDialog
+      confirmLabel="Verwerfen"
+      danger
+      onCancel={() => setPendingDiscard(null)}
+      onConfirm={() => {
+        const action = pendingDiscard
+        setPendingDiscard(null)
+        action?.()
+      }}
+      open={pendingDiscard !== null}
+      title="Änderungen verwerfen?"
+    >
+      {DISCARD_TEXT}
+    </ConfirmDialog>
+  )
 
   if (state.policy === null || reloading) {
     return (
-      <LoadScreen
-        error={state.error}
-        onCancel={state.policy === null ? null : () => setReloading(false)}
-        onClearError={clearError}
-        onLoad={(text) => {
-          if (!confirmDiscard()) {
-            return
+      <>
+        <StartScreen
+          error={state.error}
+          hasAutosave={state.policy !== null}
+          onCancel={null}
+          onClearError={clearError}
+          onLoad={load}
+          onNew={() =>
+            runUnlessDiscarding(() => {
+              dispatch({type: 'new'})
+              setReloading(false)
+              setSelection(null)
+              setView('overview')
+            })
           }
-          dispatch({text, type: 'load'})
-          if (loadSucceeds({text})) {
-            setReloading(false)
-            setSelected(null)
-          }
-        }}
-        onNew={() => {
-          if (!confirmDiscard()) {
-            return
-          }
-          dispatch({type: 'new'})
-          setReloading(false)
-          setSelected(null)
-        }}
-      />
+          onResume={state.policy === null ? null : () => setReloading(false)}
+        />
+        {discardDialog}
+      </>
     )
   }
 
@@ -87,77 +126,113 @@ export function App(): React.JSX.Element {
   const findings = state.findings
   const errorCount = findings.filter((f) => f.severity === 'error').length
   const warningCount = findings.length - errorCount
-  const selectedIndex = selected !== null && selected.tab === tab ? selected.index : null
+  const selectedIndex = selection?.index ?? null
   const showUnknownFieldHint = state.parseFindings.some((f) => f.message.startsWith('Unbekanntes Feld'))
 
-  /** Lädt die aktuelle Policy herunter; bei Fehlern in der Prüfung erst nach Rückfrage. */
-  function download(): void {
-    if (errorCount > 0 && !window.confirm(CONFIRM_TEXT)) {
-      return
-    }
+  /** Lädt die aktuelle Policy herunter und zeigt die Bestätigungsmeldung. */
+  function doDownload(): void {
     downloadText({filename: 'policy.json', text: serializePolicy({policy})})
+    setToast((previous) => ({id: (previous?.id ?? 0) + 1, message: 'policy.json heruntergeladen'}))
   }
 
-  /** Springt zum Tab und Eintrag eines Befunds. */
+  /** Lädt herunter; bei Fehlern in der Prüfung erst nach Rückfrage. */
+  function download(): void {
+    if (errorCount > 0) {
+      setConfirmDownload(true)
+      return
+    }
+    doDownload()
+  }
+
+  /** Springt zur Ansicht und zum Eintrag eines Befunds. */
   function select(path: string): void {
-    const target = parseFindingPath({path})
+    const target = viewTarget({path})
     if (target !== null) {
-      setTab(target.tab)
-      setSelected(target)
+      setView(target.view)
+      setSelection({field: target.field, index: target.index})
+      setFindingsOpen(false)
     }
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header
-        canRedo={state.future.length > 0}
-        canUndo={state.past.length > 0}
-        errorCount={errorCount}
-        fileLabel={state.original === null ? 'Neue Konfiguration' : 'policy.json'}
-        onDiff={() => setShowDiff(true)}
-        onDownload={download}
-        onRedo={() => dispatch({type: 'redo'})}
-        onReload={() => setReloading(true)}
-        onUndo={() => dispatch({type: 'undo'})}
-        warningCount={warningCount}
+    <>
+      <AppShell
+        drawer={
+          <FindingsDrawer
+            findings={findings}
+            loadNotes={state.parseFindings}
+            onClose={() => setFindingsOpen(false)}
+            onSelect={select}
+            open={findingsOpen}
+            showUnknownFieldHint={showUnknownFieldHint}
+          />
+        }
+        error={state.error}
+        onClearError={clearError}
+        sidebar={
+          <Sidebar
+            changedCount={changedRights({original: state.original, policy}).size}
+            counts={{
+              channels: policy.channels.length,
+              providers: policy.providers.length,
+              rights: policy.rights.length,
+            }}
+            errorCount={errorCount}
+            onOpenChanges={() => setDiffOpen(true)}
+            onOpenFindings={() => setFindingsOpen(true)}
+            onSelect={(next) => {
+              setView(next)
+              setSelection(null)
+            }}
+            view={view}
+            warningCount={warningCount}
+          />
+        }
+        topBar={
+          <TopBar
+            canRedo={state.future.length > 0}
+            canUndo={state.past.length > 0}
+            fileLabel={state.original === null ? 'Neue Konfiguration' : 'policy.json'}
+            onDownload={download}
+            onRedo={() => dispatch({type: 'redo'})}
+            onReload={() => setReloading(true)}
+            onUndo={() => dispatch({type: 'undo'})}
+          />
+        }
+      >
+        {view === 'channels' && <ChannelsTab dispatch={dispatch} policy={policy} selected={selectedIndex} />}
+        {view === 'providers' && <ProvidersTab dispatch={dispatch} policy={policy} selected={selectedIndex} />}
+        {view === 'rights' && <RightsTab dispatch={dispatch} policy={policy} selected={selectedIndex} />}
+        {view === 'overview' && (
+          <MatrixTab
+            onOpenRight={(index) => {
+              setView('rights')
+              setSelection({field: null, index})
+            }}
+            policy={policy}
+          />
+        )}
+      </AppShell>
+      <DiffDialog
+        current={serializePolicy({policy})}
+        onClose={() => setDiffOpen(false)}
+        open={diffOpen}
+        original={state.original}
       />
-      {state.error !== null && (
-        <div className="px-4 pt-3">
-          <ErrorBox message={state.error} onDismiss={clearError} />
-        </div>
-      )}
-      <TabBar
-        active={tab}
-        onChange={(next) => {
-          setTab(next)
-          setSelected(null)
+      <ConfirmDialog
+        confirmLabel="Herunterladen"
+        onCancel={() => setConfirmDownload(false)}
+        onConfirm={() => {
+          setConfirmDownload(false)
+          doDownload()
         }}
-      />
-      <div className="grid flex-1 grid-cols-1 lg:grid-cols-[1fr_22rem]">
-        <main aria-labelledby={`tab-${tab}`} className="min-w-0 p-4" id={`panel-${tab}`} role="tabpanel" tabIndex={0}>
-          {tab === 'channels' && <ChannelsTab dispatch={dispatch} policy={policy} selected={selectedIndex} />}
-          {tab === 'providers' && <ProvidersTab dispatch={dispatch} policy={policy} selected={selectedIndex} />}
-          {tab === 'rights' && <RightsTab dispatch={dispatch} policy={policy} selected={selectedIndex} />}
-          {tab === 'matrix' && (
-            <MatrixTab
-              onOpenRight={(index) => {
-                setTab('rights')
-                setSelected({index, tab: 'rights'})
-              }}
-              policy={policy}
-            />
-          )}
-        </main>
-        <ValidationPanel
-          findings={findings}
-          loadNotes={state.parseFindings}
-          onSelect={select}
-          showUnknownFieldHint={showUnknownFieldHint}
-        />
-      </div>
-      {showDiff && (
-        <DiffDialog current={serializePolicy({policy})} onClose={() => setShowDiff(false)} original={state.original} />
-      )}
-    </div>
+        open={confirmDownload}
+        title="Datei enthält Fehler"
+      >
+        {CONFIRM_TEXT}
+      </ConfirmDialog>
+      {discardDialog}
+      <Toast message={toast?.message ?? null} onDone={() => setToast(null)} showId={toast?.id} />
+    </>
   )
 }
