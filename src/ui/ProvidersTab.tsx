@@ -28,6 +28,8 @@ export function ProvidersTab({dispatch, policy, selected}: ProvidersTabProps): R
   useEffect(() => {
     if (open !== null) {
       document.getElementById(`provider-item-${open}`)?.scrollIntoView({block: 'nearest'})
+      /* Im gestapelten Layout (schmal) liegt das Formular unter der Liste und wird ins Bild geholt */
+      document.getElementById('provider-form-panel')?.scrollIntoView({block: 'nearest'})
     }
   }, [open])
 
@@ -76,12 +78,12 @@ export function ProvidersTab({dispatch, policy, selected}: ProvidersTabProps): R
           Neuer Provider
         </button>
       </div>
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(18rem,26rem)_1fr]">
-        <div>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(13rem,17rem)_minmax(0,1fr)]">
+        <div className="lg:sticky lg:top-4 lg:self-start">
           <p aria-live="polite" className="mb-2 text-xs text-slate-700">
             {visible.length} von {policy.providers.length} angezeigt
           </p>
-          <ul className="flex max-h-[70vh] flex-col gap-1 overflow-y-auto">
+          <ul className="flex max-h-[40vh] flex-col lg:max-h-[calc(100vh-13rem)] gap-1 overflow-y-auto">
             {visible.map(({index, provider}) => {
               const count = findProviderUsages({name: provider.name, policy}).length
               return (
@@ -107,7 +109,7 @@ export function ProvidersTab({dispatch, policy, selected}: ProvidersTabProps): R
           </ul>
           {visible.length === 0 && <p className="text-sm text-slate-700">Keine Treffer.</p>}
         </div>
-        <div>
+        <div id="provider-form-panel" className="min-w-0">
           {openProvider === undefined ? (
             <p className="text-sm text-slate-700">Provider aus der Liste wählen oder einen neuen anlegen.</p>
           ) : (
