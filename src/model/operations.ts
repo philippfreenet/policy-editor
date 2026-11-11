@@ -1,3 +1,4 @@
+import {isBlank} from './isBlank.ts'
 import {OperationError} from './OperationError.ts'
 import type {ConditionNode, PolicyFile, ProviderDef, RightDef} from './PolicyTypes.ts'
 
@@ -5,7 +6,7 @@ export {OperationError}
 
 /** Wirft, wenn der Name leer oder nur Leerraum ist. */
 function assertNotBlank(args: {name: string}): void {
-  if (args.name.trim().length === 0) {
+  if (isBlank({value: args.name})) {
     throw new OperationError('Name darf nicht leer sein')
   }
 }
@@ -104,7 +105,7 @@ export function deleteChannel(args: {channel: string; policy: PolicyFile}): Poli
 }
 
 /** Benennt den Provider am Index um (Eindeutigkeit gegenüber den übrigen) und zieht alle Referenzen nach. */
-function renameProviderAt(args: {index: number; policy: PolicyFile; to: string}): PolicyFile {
+export function renameProviderAt(args: {index: number; policy: PolicyFile; to: string}): PolicyFile {
   assertNotBlank({name: args.to})
   const policy = structuredClone(args.policy)
   const current = policy.providers[args.index]

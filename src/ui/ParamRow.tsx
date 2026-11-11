@@ -1,6 +1,6 @@
 import {useState} from 'react'
 import type {ParamDef, Scalar} from '../model/PolicyTypes.ts'
-import {convertValues, valueType} from './convertValues.ts'
+import {convertValues, droppedValues, valueType} from './convertValues.ts'
 import type {ValueType} from './convertValues.ts'
 import {BUTTON, BUTTON_DANGER, INPUT} from './styles.ts'
 
@@ -70,6 +70,15 @@ export function ParamRow({listId, onChange, onRemove, param, rowId}: ParamRowPro
             id={`${rowId}-type`}
             onChange={(event) => {
               const target = event.target.value as ValueType
+              const dropped = droppedValues({target, values: param.values})
+              if (
+                dropped.length > 0 &&
+                !window.confirm(
+                  `Beim Wechsel des Werttyps gehen diese Werte verloren: ${dropped.join(', ')}. Fortfahren?`,
+                )
+              ) {
+                return
+              }
               setChosen(target)
               setProblem(null)
               onChange({...param, values: convertValues({target, values: param.values})})

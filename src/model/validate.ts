@@ -1,9 +1,10 @@
 import {PROVIDER_CLASSES, USER_ROLES} from '../constants.ts'
+import {isBlank} from './isBlank.ts'
 import type {CompositeNode, Finding, PolicyFile, ProviderDef, RightDef} from './PolicyTypes.ts'
 
-/** Prüft, ob ein Text leer oder nur aus Leerzeichen besteht (entspricht `String.isBlank` im Service). */
-function isBlank(args: {value: string | undefined}): boolean {
-  return args.value === undefined || args.value.trim().length === 0
+/** Prüft, ob ein Text fehlt oder leer bzw. nur Leerraum ist (entspricht `String.isBlank` im Service). */
+function isMissing(args: {value: string | undefined}): boolean {
+  return args.value === undefined || isBlank({value: args.value})
 }
 
 /** Erzeugt einen Fehlerbefund. */
@@ -32,7 +33,7 @@ function checkStringList(args: {
   const seen = new Set<string>()
   args.values.forEach((value, index) => {
     const path = `${args.path}[${index}]`
-    if (isBlank({value})) {
+    if (isMissing({value})) {
       args.findings.push(error({message: emptyMessage, path}))
     } else if (seen.has(value)) {
       args.findings.push(error({message: args.duplicateMessage(value), path}))
@@ -50,7 +51,7 @@ function validateParams(args: {findings: Finding[]; path: string; provider: Prov
   const names = new Set<string>()
   ;(args.provider.params ?? []).forEach((param, index) => {
     const path = `${args.path}.params[${index}]`
-    if (isBlank({value: param.name})) {
+    if (isMissing({value: param.name})) {
       args.findings.push(
         error({
           message: `Pflichtfeld fehlt oder ist leer: Parametername von Provider ${args.providerName}`,
@@ -93,7 +94,7 @@ function validateProviders(args: {findings: Finding[]; providers: ProviderDef[]}
   args.providers.forEach((provider, index) => {
     const path = `providers[${index}]`
     let name = ''
-    if (isBlank({value: provider.name})) {
+    if (isMissing({value: provider.name})) {
       args.findings.push(
         error({message: 'Pflichtfeld fehlt oder ist leer: name eines Providers', path: `${path}.name`}),
       )
@@ -104,7 +105,7 @@ function validateProviders(args: {findings: Finding[]; providers: ProviderDef[]}
       }
       names.add(name)
     }
-    if (isBlank({value: provider.className})) {
+    if (isMissing({value: provider.className})) {
       args.findings.push(
         error({
           message: `Pflichtfeld fehlt oder ist leer: className von Provider ${name}`,
@@ -133,7 +134,7 @@ function validateComposite(args: {
   rightName: string
 }): void {
   const {composite, findings, path, providerNames, rightName} = args
-  if (isBlank({value: composite.operator})) {
+  if (isMissing({value: composite.operator})) {
     findings.push(
       error({message: `Pflichtfeld fehlt oder ist leer: operator in Recht ${rightName}`, path: `${path}.operator`}),
     )
@@ -155,7 +156,7 @@ function validateComposite(args: {
     const childPath = `${path}.conditions[${index}]`
     if (typeof child !== 'string') {
       validateComposite({composite: child, findings, path: childPath, providerNames, rightName})
-    } else if (isBlank({value: child})) {
+    } else if (isMissing({value: child})) {
       findings.push(
         error({message: `Pflichtfeld fehlt oder ist leer: Provider-Referenz in Recht ${rightName}`, path: childPath}),
       )
@@ -178,7 +179,7 @@ function validateRights(args: {
   args.rights.forEach((right: RightDef, index) => {
     const path = `rights[${index}]`
     let name = ''
-    if (isBlank({value: right.name})) {
+    if (isMissing({value: right.name})) {
       args.findings.push(error({message: 'Pflichtfeld fehlt oder ist leer: name eines Rechts', path: `${path}.name`}))
     } else {
       name = right.name
@@ -187,7 +188,7 @@ function validateRights(args: {
       }
       names.add(name)
     }
-    if (isBlank({value: right.description})) {
+    if (isMissing({value: right.description})) {
       args.findings.push(
         error({
           message: `Pflichtfeld fehlt oder ist leer: description von Recht ${name}`,

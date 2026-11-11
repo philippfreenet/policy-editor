@@ -16,7 +16,7 @@ const ROW_STYLE = {
 
 const MARKER = {added: '+', collapsed: ' ', context: ' ', removed: '-'} as const
 
-/** Modaler Dialog mit zeilenweisem Diff gegen die geladene Datei; Esc oder „Schließen" beendet ihn. */
+/** Modaler Dialog mit zeilenweisem Diff gegen die geladene Datei; Esc oder „Schließen“ beendet ihn. */
 export function DiffDialog({current, onClose, original}: DiffDialogProps): React.JSX.Element {
   const ref = useRef<HTMLDialogElement>(null)
   const rows = buildDiffRows({context: 3, current, original: original ?? ''})

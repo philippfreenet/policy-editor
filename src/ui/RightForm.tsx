@@ -20,8 +20,8 @@ const MOVE_CONFIRM = 'Die öffentlichen IDs der Rechte ändern sich. Fortfahren?
 /** Formular für ein Recht: Name, Beschreibung, Rollen, Channels und Bedingungsbaum. */
 export function RightForm({dispatch, index, onDeleted, onMoved, policy, right}: RightFormProps): React.JSX.Element {
   const prefix = `right-form-${index}`
-  const extraRoles = right.roles.filter((r) => !USER_ROLES.includes(r))
-  const extraChannels = right.channels.filter((c) => !policy.channels.includes(c))
+  const extraRoles = [...new Set(right.roles.filter((r) => !USER_ROLES.includes(r)))]
+  const extraChannels = [...new Set(right.channels.filter((c) => !policy.channels.includes(c)))]
 
   /** Schreibt das geänderte Recht zurück. */
   function save(next: RightDef): void {

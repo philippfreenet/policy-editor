@@ -1,3 +1,4 @@
+import {useRef} from 'react'
 import type {ParamDef} from '../model/PolicyTypes.ts'
 import {ParamRow} from './ParamRow.tsx'
 import {BUTTON} from './styles.ts'
@@ -13,6 +14,14 @@ interface ParamEditorProps {
 /** Parameterliste eines Providers; eine leere Liste wird als „keine params“ (undefined) gemeldet. */
 export function ParamEditor({idPrefix, onChange, params, suggestions}: ParamEditorProps): React.JSX.Element {
   const listId = `${idPrefix}-suggestions`
+  const nextId = useRef(0)
+  const rowKeys = useRef<number[]>([])
+
+  /* Stabile Zeilenschlüssel: bei abweichender Länge (z. B. anderer Provider) wird aufgefüllt bzw. gekürzt. */
+  while (rowKeys.current.length < params.length) {
+    rowKeys.current.push(nextId.current++)
+  }
+  rowKeys.current.length = params.length
 
   /** Meldet die neue Liste; leer bedeutet: Schlüssel weglassen. */
   function emit(next: ParamDef[]): void {
@@ -31,10 +40,13 @@ export function ParamEditor({idPrefix, onChange, params, suggestions}: ParamEdit
       <ul className="flex flex-col gap-2">
         {params.map((param, i) => (
           <ParamRow
-            key={i}
+            key={rowKeys.current[i]}
             listId={listId}
             onChange={(changed) => emit(params.map((p, j) => (j === i ? changed : p)))}
-            onRemove={() => emit(params.filter((_, j) => j !== i))}
+            onRemove={() => {
+              rowKeys.current.splice(i, 1)
+              emit(params.filter((_, j) => j !== i))
+            }}
             param={param}
             rowId={`${idPrefix}-param-${i}`}
           />

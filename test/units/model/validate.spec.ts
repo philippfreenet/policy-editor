@@ -246,6 +246,22 @@ describe('validatePolicy', () => {
     ])
   })
 
+  it('Fehlschlag: meldet ungültigen operator in verschachtelter Gruppe der Tiefe 3', () => {
+    const findings = run({
+      mutate: (p) =>
+        (p.rights[0].condition = {
+          conditions: ['p1', {conditions: [{conditions: ['p2'], operator: 'NAND'}], operator: 'AND'}],
+          operator: 'AND',
+        }),
+    })
+    expect(findings).to.deep.equal([
+      error({
+        message: 'Ungültiger operator in Recht r1: NAND',
+        path: 'rights[0].condition.conditions[1].conditions[0].operator',
+      }),
+    ])
+  })
+
   it('Fehlschlag: meldet leeren operator', () => {
     expect(run({mutate: (p) => (p.rights[0].condition!.operator = '')})).to.deep.equal([
       error({message: 'Pflichtfeld fehlt oder ist leer: operator in Recht r1', path: 'rights[0].condition.operator'}),

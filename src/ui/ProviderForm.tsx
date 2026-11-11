@@ -1,5 +1,5 @@
 import {PROVIDER_CLASSES} from '../constants.ts'
-import {deleteProvider, findProviderUsages, renameProvider, upsertProvider} from '../model/operations.ts'
+import {deleteProvider, findProviderUsages, renameProviderAt, upsertProvider} from '../model/operations.ts'
 import type {PolicyFile, ProviderDef} from '../model/PolicyTypes.ts'
 import type {EditorAction} from '../state/editorReducer.ts'
 import {NameInput} from './NameInput.tsx'
@@ -17,7 +17,7 @@ interface ProviderFormProps {
   provider: ProviderDef
 }
 
-/** Formular für einen Provider; Namensänderungen laufen über renameProvider, alle anderen Felder über upsertProvider. */
+/** Formular für einen Provider; Namensänderungen laufen über renameProviderAt, alle anderen Felder über upsertProvider. */
 export function ProviderForm({dispatch, index, onDeleted, policy, provider}: ProviderFormProps): React.JSX.Element {
   const prefix = `provider-form-${index}`
   const usages = findProviderUsages({name: provider.name, policy})
@@ -55,9 +55,7 @@ export function ProviderForm({dispatch, index, onDeleted, policy, provider}: Pro
         <NameInput
           id={`${prefix}-name`}
           label="Name"
-          onCommit={(to) =>
-            dispatch({apply: (p) => renameProvider({from: provider.name, policy: p, to}), type: 'edit'})
-          }
+          onCommit={(to) => dispatch({apply: (p) => renameProviderAt({index, policy: p, to}), type: 'edit'})}
           value={provider.name}
         />
         <p className="text-xs text-slate-700">Übernahme mit Enter oder beim Verlassen des Feldes; Escape verwirft.</p>
@@ -119,6 +117,9 @@ export function ProviderForm({dispatch, index, onDeleted, policy, provider}: Pro
           className={usages.length > 0 ? BUTTON : BUTTON_DANGER}
           disabled={usages.length > 0}
           onClick={() => {
+            if (!window.confirm(`Provider ${provider.name} wirklich löschen?`)) {
+              return
+            }
             dispatch({apply: (p) => deleteProvider({index, policy: p}), type: 'edit'})
             onDeleted()
           }}

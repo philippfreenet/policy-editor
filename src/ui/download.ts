@@ -7,5 +7,5 @@ export function downloadText(args: {filename: string; text: string}): void {
   document.body.appendChild(link)
   link.click()
   link.remove()
-  URL.revokeObjectURL(url)
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
 }

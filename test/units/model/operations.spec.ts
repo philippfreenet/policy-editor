@@ -10,6 +10,7 @@ import {
   moveRight,
   renameChannel,
   renameProvider,
+  renameProviderAt,
   upsertProvider,
   upsertRight,
 } from '../../../src/model/operations.ts'
@@ -148,6 +149,22 @@ describe('operations', () => {
 
     it('Erfolg: Umbenennen auf den identischen Namen ändert nichts', () => {
       expect(renameProvider({from: 'p1', policy: basePolicy(), to: 'p1'})).to.deep.equal(basePolicy())
+    })
+
+    it('Erfolg: Umbenennen per Index trifft bei gleichnamigen Providern den richtigen', () => {
+      const policy: PolicyFile = {
+        channels: ['A'],
+        providers: [
+          {className: 'MarkProvider', name: 'A'},
+          {className: 'VvlProvider', name: 'A'},
+        ],
+        rights: [],
+      }
+      const result = renameProviderAt({index: 1, policy, to: 'B'})
+      expect(result.providers).to.deep.equal([
+        {className: 'MarkProvider', name: 'A'},
+        {className: 'VvlProvider', name: 'B'},
+      ])
     })
 
     it('Fehlschlag: lehnt Umbenennung auf vorhandenen Provider ab', () => {

@@ -3,12 +3,19 @@ import {parseFindingPath} from './pathTarget.ts'
 
 interface ValidationPanelProps {
   findings: Finding[]
+  /** Befunde zur ursprünglichen Datei (nur Information, zählen nicht als Fehler). */
+  loadNotes: Finding[]
   onSelect: (path: string) => void
   showUnknownFieldHint: boolean
 }
 
 /** Seitenleiste mit allen Befunden; Fehler rot, Warnungen gelb; Befunde mit bekanntem Pfad springen per Klick zum Eintrag. */
-export function ValidationPanel({findings, onSelect, showUnknownFieldHint}: ValidationPanelProps): React.JSX.Element {
+export function ValidationPanel({
+  findings,
+  loadNotes,
+  onSelect,
+  showUnknownFieldHint,
+}: ValidationPanelProps): React.JSX.Element {
   return (
     <aside aria-labelledby="validation-title" className="flex flex-col gap-3 border-l border-slate-300 bg-white p-3">
       <h2 className="text-sm font-semibold text-slate-900" id="validation-title">
@@ -53,6 +60,24 @@ export function ValidationPanel({findings, onSelect, showUnknownFieldHint}: Vali
             )
           })}
         </ul>
+      )}
+      {loadNotes.length > 0 && (
+        <section aria-labelledby="load-notes-title" className="flex flex-col gap-2 border-t border-slate-300 pt-3">
+          <h3 className="text-sm font-semibold text-slate-900" id="load-notes-title">
+            Hinweise zur geladenen Datei
+          </h3>
+          <ul className="flex flex-col gap-2">
+            {loadNotes.map((note, i) => (
+              <li
+                className="rounded-md border border-slate-300 bg-slate-50 px-2 py-1.5 text-xs text-slate-800"
+                key={`${note.path}-${i}`}
+              >
+                <span className="font-mono opacity-80">{note.path}</span>
+                <span className="mt-0.5 block">{note.message}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </aside>
   )

@@ -1,5 +1,5 @@
 import {expect} from 'chai'
-import {convertValues, valueType} from '../../../src/ui/convertValues.ts'
+import {convertValues, droppedValues, valueType} from '../../../src/ui/convertValues.ts'
 
 describe('convertValues', () => {
   it('Erfolg: Text -> Zahl behält nur ganze Zahlen', () => {
@@ -29,5 +29,21 @@ describe('valueType', () => {
 
   it('Fehlschlag: leere Liste ergibt Text', () => {
     expect(valueType({values: []})).to.equal('string')
+  })
+
+  it('Erfolg: droppedValues nennt die beim Wechsel zu Zahl verlorenen Werte', () => {
+    expect(droppedValues({target: 'number', values: ['ACTIVE', '7', 'ACTIVE_PLANNED']})).to.deep.equal([
+      'ACTIVE',
+      'ACTIVE_PLANNED',
+    ])
+  })
+
+  it('Erfolg: droppedValues ist beim Wechsel zu Text leer', () => {
+    expect(droppedValues({target: 'string', values: [1, true]})).to.deep.equal([])
+  })
+
+  it('Fehlschlag: droppedValues ist leer, wenn alles umwandelbar ist', () => {
+    expect(droppedValues({target: 'boolean', values: ['true', 'FALSE', false]})).to.deep.equal([])
+    expect(droppedValues({target: 'boolean', values: [1]})).to.deep.equal(['1'])
   })
 })

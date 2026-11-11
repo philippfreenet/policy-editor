@@ -47,6 +47,10 @@ npm run coverage      # Branch-Coverage des Modells (src/model), Ziel mindestens
 npm audit
 ```
 
+`package.json` pinnt per `overrides` `glob` und `minimatch` auf nicht verwundbare Versionen, weil `mocha` und `c8` (über `test-exclude`) sonst ältere, für Denial of Service anfällige Versionen mitbringen (Stand 11/2026, mit entferntem Override meldet `npm audit` 5 Schwachstellen). Die Overrides können entfallen, sobald `mocha` und `c8` ohne sie auf unbedenkliche Versionen auflösen; das prüft man, indem man sie entfernt, neu installiert und `npm audit` ausführt.
+
+**Ganzzahlen:** Ganzzahlige Parameterwerte werden als JavaScript-Safe-Integer geprüft (Betrag höchstens 2^53−1). Größere Java-`long`-Werte werden als Befund gemeldet und würden beim Herunterladen gerundet.
+
 ## Lokal, ohne Netzwerk
 
 Die Anwendung läuft vollständig im Browser, hat kein Backend und macht zur Laufzeit keine Netzwerkaufrufe. Es gibt keine Zugangsdaten und keine GitHub-Anbindung. Die geladene Datei verlässt den Rechner nicht.
@@ -60,6 +64,8 @@ src/
 ├── state/         # Editor-Reducer, useEditor, Autosave
 └── ui/            # React-Komponenten und UI-Hilfsfunktionen
 test/
-├── fixtures/      # Beispiel-policy.json
+├── fixtures/      # policy-prod.json, policy-test.json
 └── units/         # Mocha-Tests, spiegeln src/
 ```
+
+Die Fixtures `test/fixtures/policy-prod.json` und `test/fixtures/policy-test.json` sind Byte-Kopien der `policy-config/policy.json` und `policy-config-test/policy.json` des policy-service.

@@ -45,3 +45,12 @@ export function convertValues(args: {target: ValueType; values: readonly Scalar[
   }
   return result
 }
+
+/** Liefert die Werte (als Text), die beim Wechsel auf den Zieltyp verloren gehen würden. */
+export function droppedValues(args: {target: ValueType; values: readonly Scalar[]}): string[] {
+  if (args.target === 'string') {
+    return []
+  }
+  const convert = args.target === 'number' ? toNumber : toBoolean
+  return args.values.filter((value) => convert(value) === undefined).map((value) => String(value))
+}

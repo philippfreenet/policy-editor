@@ -13,13 +13,20 @@ interface LoadScreenProps {
 export function LoadScreen({error, onCancel, onClearError, onLoad, onNew}: LoadScreenProps): React.JSX.Element {
   const [text, setText] = useState('')
   const [dragging, setDragging] = useState(false)
+  const [readError, setReadError] = useState<string | null>(null)
 
   /** Liest die Datei lokal im Browser und lädt ihren Inhalt. */
   async function loadFile(file: File | undefined): Promise<void> {
     if (file === undefined) {
       return
     }
-    onLoad(await file.text())
+    try {
+      const content = await file.text()
+      setReadError(null)
+      onLoad(content)
+    } catch (e) {
+      setReadError(`Datei konnte nicht gelesen werden: ${e instanceof Error ? e.message : String(e)}`)
+    }
   }
 
   return (
@@ -32,6 +39,7 @@ export function LoadScreen({error, onCancel, onClearError, onLoad, onNew}: LoadS
       </header>
 
       {error !== null && <ErrorBox message={error} onDismiss={onClearError} />}
+      {readError !== null && <ErrorBox message={readError} onDismiss={() => setReadError(null)} />}
 
       <label
         className={`flex cursor-pointer flex-col items-center gap-1 rounded-lg border-2 border-dashed px-4 py-8 text-center text-sm focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-indigo-600 ${

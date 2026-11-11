@@ -15,6 +15,7 @@ import {RightsTab} from './ui/RightsTab.tsx'
 import {TabBar} from './ui/TabBar.tsx'
 import {ValidationPanel} from './ui/ValidationPanel.tsx'
 
+const DISCARD_TEXT = 'Ungespeicherte Änderungen gehen verloren. Trotzdem fortfahren?'
 const CONFIRM_TEXT = 'Die Datei enthält Fehler, die den Start des policy-service verhindern. Trotzdem herunterladen?'
 
 /** Wurzel der Anwendung: Ladeansicht oder Editor mit Kopfzeile, Tabs und Prüfergebnis. */
@@ -27,6 +28,14 @@ export function App(): React.JSX.Element {
 
   const clearError = (): void => dispatch({type: 'clearError'})
 
+  /** Fragt nach, wenn die aktuelle Policy von der geladenen Datei abweicht; true bedeutet: fortfahren. */
+  function confirmDiscard(): boolean {
+    if (state.policy === null || serializePolicy({policy: state.policy}) === (state.original ?? '')) {
+      return true
+    }
+    return window.confirm(DISCARD_TEXT)
+  }
+
   if (state.policy === null || reloading) {
     return (
       <LoadScreen
@@ -34,6 +43,9 @@ export function App(): React.JSX.Element {
         onCancel={state.policy === null ? null : () => setReloading(false)}
         onClearError={clearError}
         onLoad={(text) => {
+          if (!confirmDiscard()) {
+            return
+          }
           dispatch({text, type: 'load'})
           if (loadSucceeds({text})) {
             setReloading(false)
@@ -41,6 +53,9 @@ export function App(): React.JSX.Element {
           }
         }}
         onNew={() => {
+          if (!confirmDiscard()) {
+            return
+          }
           dispatch({type: 'new'})
           setReloading(false)
           setSelected(null)
@@ -50,7 +65,7 @@ export function App(): React.JSX.Element {
   }
 
   const policy = state.policy
-  const findings = [...state.parseFindings, ...state.findings]
+  const findings = state.findings
   const errorCount = findings.filter((f) => f.severity === 'error').length
   const warningCount = findings.length - errorCount
   const selectedIndex = selected !== null && selected.tab === tab ? selected.index : null
@@ -101,7 +116,12 @@ export function App(): React.JSX.Element {
           {tab === 'providers' && <ProvidersTab dispatch={dispatch} policy={policy} selected={selectedIndex} />}
           {tab === 'rights' && <RightsTab dispatch={dispatch} policy={policy} selected={selectedIndex} />}
         </main>
-        <ValidationPanel findings={findings} onSelect={select} showUnknownFieldHint={showUnknownFieldHint} />
+        <ValidationPanel
+          findings={findings}
+          loadNotes={state.parseFindings}
+          onSelect={select}
+          showUnknownFieldHint={showUnknownFieldHint}
+        />
       </div>
       {showDiff && (
         <DiffDialog current={serializePolicy({policy})} onClose={() => setShowDiff(false)} original={state.original} />
