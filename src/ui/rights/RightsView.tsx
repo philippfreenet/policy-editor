@@ -1,4 +1,4 @@
-import {useState} from 'react'
+import {useCallback, useEffect, useState} from 'react'
 import {upsertRight} from '../../model/operations.ts'
 import {matchesFilter} from '../../model/rightQueries.ts'
 import type {RightFilter} from '../../model/rightQueries.ts'
@@ -27,17 +27,20 @@ const SEARCH_KEY: Record<FilterKey, string> = {channel: 'channel', provider: 'pr
 /** Rechte-Ansicht: Liste mit Suche und Filtern links, Inspektor des gewählten Rechts rechts. */
 export function RightsView({changed, dispatch, findings, policy, selection}: RightsViewProps): React.JSX.Element {
   const [open, setOpen] = useState<number | null>(selection?.index ?? null)
-  const [lastIndex, setLastIndex] = useState<number | null>(selection?.index ?? null)
+  /* Auswahl wird per Objektidentität verglichen: App erzeugt je Sprung ein neues Objekt, auch für dasselbe Recht */
+  const [lastSelection, setLastSelection] = useState(selection)
+  const [jumpField, setJumpField] = useState<string | null>(selection?.field ?? null)
+  const [focusList, setFocusList] = useState(false)
   const [text, setText] = useState('')
   const [menu, setMenu] = useState<MenuFilter>(NO_MENU)
   const [editNameFor, setEditNameFor] = useState<number | null>(null)
 
   /* Eine von außen (z. B. Befund, Übersicht) gesetzte Auswahl öffnet das Recht und zeigt es ungefiltert */
-  const incoming = selection?.index ?? null
-  if (incoming !== lastIndex) {
-    setLastIndex(incoming)
-    if (incoming !== null) {
-      setOpen(incoming)
+  if (selection !== lastSelection) {
+    setLastSelection(selection)
+    if (selection?.index !== null && selection?.index !== undefined) {
+      setOpen(selection.index)
+      setJumpField(selection.field)
       setText('')
       setMenu(NO_MENU)
     }
@@ -52,6 +55,19 @@ export function RightsView({changed, dispatch, findings, policy, selection}: Rig
   }
   const visible = policy.rights.flatMap((right, index) => (matchesFilter({filter, right}) ? [index] : []))
   const openRight = open === null ? undefined : policy.rights[open]
+
+  /** Verbraucht den Namensfeld-Start. */
+  const clearAutoEdit = useCallback((): void => setEditNameFor(null), [])
+  /** Verbraucht den Feldsprung. */
+  const clearJump = useCallback((): void => setJumpField(null), [])
+
+  /* Nach dem Löschen landet der Fokus in der Liste statt im Nichts */
+  useEffect(() => {
+    if (focusList) {
+      document.getElementById('rights-list')?.focus()
+      setFocusList(false)
+    }
+  }, [focusList])
 
   /** Hängt ein neues Recht an, wählt es und öffnet sein Namensfeld. */
   function create(): void {
@@ -113,8 +129,13 @@ export function RightsView({changed, dispatch, findings, policy, selection}: Rig
             findings={findings}
             index={open}
             key={open}
-            onAutoEditDone={() => setEditNameFor(null)}
-            onDeleted={() => setOpen(null)}
+            onAutoEditDone={clearAutoEdit}
+            jumpField={jumpField}
+            onDeleted={() => {
+              setOpen(null)
+              setFocusList(true)
+            }}
+            onJumpDone={clearJump}
             onMoved={setOpen}
             policy={policy}
             right={openRight}

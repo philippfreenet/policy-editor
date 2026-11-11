@@ -7,6 +7,8 @@ interface InlineEditProps {
   /** Übernimmt den Wert; liefert `null` bei Annahme oder eine Fehlermeldung bei Ablehnung. */
   onCommit: (value: string) => string | null
   placeholder?: string
+  /** Startet im Bearbeitungsmodus (nur beim Einblenden wirksam), z. B. für frisch angelegte Einträge. */
+  startEditing?: boolean
   size?: 'lg' | 'md'
   value: string
 }
@@ -20,10 +22,11 @@ export function InlineEdit({
   mono = false,
   onCommit,
   placeholder = '',
+  startEditing = false,
   size = 'md',
   value,
 }: InlineEditProps): React.JSX.Element {
-  const [editing, setEditing] = useState(false)
+  const [editing, setEditing] = useState(startEditing)
   const [draft, setDraft] = useState(value)
   const [message, setMessage] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)

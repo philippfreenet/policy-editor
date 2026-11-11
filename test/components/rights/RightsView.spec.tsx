@@ -2,7 +2,7 @@ import {cleanup, render, screen, within} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import {expect} from 'chai'
 import {readFileSync} from 'node:fs'
-import {useReducer} from 'react'
+import {useReducer, useState} from 'react'
 import sinon from 'sinon'
 import type {PolicyFile} from '../../../src/model/PolicyTypes.ts'
 import {editorReducer, initialState} from '../../../src/state/editorReducer.ts'
@@ -23,18 +23,31 @@ function Harness(props: {index: number | null; latest: {policy: PolicyFile | nul
   const [state, dispatch] = useReducer(editorReducer, props.text, (text) =>
     editorReducer(initialState, {text, type: 'load'}),
   )
+  const [selection, setSelection] = useState<{field: string | null; index: number | null} | null>(
+    props.index === null ? null : {field: null, index: props.index},
+  )
   props.latest.policy = state.policy
   if (state.policy === null) {
     return <p>leer</p>
   }
   return (
-    <RightsView
-      changed={changedRights({original: state.original, policy: state.policy})}
-      dispatch={dispatch}
-      findings={state.findings}
-      policy={state.policy}
-      selection={props.index === null ? null : {field: null, index: props.index}}
-    />
+    <>
+      {[5, 7].map((id) => (
+        <button key={id} onClick={() => setSelection({field: null, index: id - 1})} type="button">
+          Springe zu {id}
+        </button>
+      ))}
+      <button onClick={() => setSelection({field: 'condition', index: 3})} type="button">
+        Springe zu Bedingung
+      </button>
+      <RightsView
+        changed={changedRights({original: state.original, policy: state.policy})}
+        dispatch={dispatch}
+        findings={state.findings}
+        policy={state.policy}
+        selection={selection}
+      />
+    </>
   )
 }
 
@@ -165,8 +178,8 @@ describe('RightsView', () => {
         },
       }),
     })
-    expect(screen.getByText('FOO')).to.exist
-    expect(screen.getByText('BAR')).to.exist
+    expect(screen.getByText('FOO').parentElement?.className).to.include('text-danger')
+    expect(screen.getByText('BAR').parentElement?.className).to.include('text-danger')
     await user.click(screen.getByRole('button', {name: 'FOO entfernen'}))
     await user.click(screen.getByRole('button', {name: 'BAR entfernen'}))
     expect(latest.policy?.rights[3]?.roles).to.not.include('FOO')
@@ -217,5 +230,108 @@ describe('RightsView', () => {
     await user.click(screen.getByRole('button', {name: /^\+ Rolle/}))
     await user.click(screen.getByRole('checkbox', {name: 'SYSTEM'}))
     expect(screen.getAllByRole('img', {name: 'geändert'})).to.have.length(1)
+  })
+
+  it('Erfolg: erneutes Anspringen desselben Rechts wirkt auch nach einem Klick in der Liste', async () => {
+    const user = userEvent.setup()
+    setup({index: null})
+    await user.click(screen.getByRole('button', {name: 'Springe zu 5'}))
+    expect(screen.getByText('ID 5')).to.exist
+    await user.click(within(screen.getByRole('list', {name: 'Rechte'})).getByRole('button', {name: /^#7 /}))
+    expect(screen.getByText('ID 7')).to.exist
+    await user.click(screen.getByRole('button', {name: 'Springe zu 5'}))
+    expect(screen.getByText('ID 5')).to.exist
+  })
+
+  it('Fehlschlag: leere oder ungültige Zielposition sperrt „Verschieben“ und verschiebt nichts', async () => {
+    const user = userEvent.setup()
+    const {latest} = setup()
+    await user.click(screen.getByRole('button', {name: 'Aktionen für Recht'}))
+    await user.click(screen.getByRole('menuitem', {name: 'Position ändern…'}))
+    const field = screen.getByRole('spinbutton', {name: 'Neue ID'})
+    await user.clear(field)
+    expect((screen.getByRole('button', {name: 'Verschieben'}) as HTMLButtonElement).disabled).to.equal(true)
+    expect(screen.getByRole('alert').textContent).to.include('1 bis 49')
+    await user.type(field, '99')
+    expect((screen.getByRole('button', {name: 'Verschieben'}) as HTMLButtonElement).disabled).to.equal(true)
+    expect(latest.policy?.rights[3]?.name).to.equal('SimkarteSperren')
+  })
+
+  it('Erfolg: genau 7 Channels werden auf 6 gekürzt und mit „+ 1 weitere“ aufgeklappt', async () => {
+    const user = userEvent.setup()
+    setup({
+      text: fixtureText({
+        tweak: (p) => {
+          const right = p.rights[3]
+          if (right !== undefined) {
+            right.channels = p.channels.slice(0, 7)
+          }
+        },
+      }),
+    })
+    const wo = screen.getByRole('region', {name: 'Wo'})
+    expect(within(wo).getAllByRole('button', {name: /entfernen$/})).to.have.length(6)
+    await user.click(within(wo).getByRole('button', {name: '+ 1 weitere'}))
+    expect(within(wo).getAllByRole('button', {name: /entfernen$/})).to.have.length(7)
+    expect(within(wo).getByRole('button', {name: 'weniger'})).to.exist
+  })
+
+  it('Erfolg: nach „Löschen…“ liegt der Fokus in der Liste', async () => {
+    const user = userEvent.setup()
+    setup()
+    await user.click(screen.getByRole('button', {name: 'Aktionen für Recht'}))
+    await user.click(screen.getByRole('menuitem', {name: 'Löschen…'}))
+    await user.click(screen.getByRole('button', {name: 'Löschen'}))
+    expect(screen.getByRole('list', {name: 'Rechte'}).contains(document.activeElement)).to.equal(true)
+  })
+
+  it('Erfolg: Feldsprung auf „condition“ fokussiert im Wann-Block', async () => {
+    const user = userEvent.setup()
+    setup({index: null})
+    await user.click(screen.getByRole('button', {name: 'Springe zu Bedingung'}))
+    expect(screen.getByRole('region', {name: 'Wann'}).contains(document.activeElement)).to.equal(true)
+  })
+
+  it('Erfolg: „alle“ im Channel-Picker behält unbekannte Channels, „keine“ leert alles', async () => {
+    const user = userEvent.setup()
+    const {latest} = setup({
+      text: fixtureText({
+        tweak: (p) => {
+          const right = p.rights[3]
+          if (right !== undefined) {
+            right.channels = ['BAR', 'APP']
+          }
+        },
+      }),
+    })
+    await user.click(screen.getByRole('button', {name: /^\+ Channel/}))
+    await user.click(screen.getByRole('button', {name: 'alle'}))
+    const channels = latest.policy?.rights[3]?.channels ?? []
+    expect(channels).to.include('BAR')
+    expect(channels).to.have.length(12)
+    await user.click(screen.getByRole('button', {name: 'keine'}))
+    expect(latest.policy?.rights[3]?.channels).to.deep.equal([])
+  })
+
+  it('Erfolg: Singular im Löschen-Text bei genau einem folgenden Recht', async () => {
+    const user = userEvent.setup()
+    setup({index: 47})
+    await user.click(screen.getByRole('button', {name: 'Aktionen für Recht'}))
+    await user.click(screen.getByRole('menuitem', {name: 'Löschen…'}))
+    expect(screen.getByText(/Die ID von 1 folgenden Recht verschiebt sich\./)).to.exist
+  })
+
+  it('Fehlschlag: doppelte Channel-Namen erzeugen keine Key-Warnung im Filter', async () => {
+    const user = userEvent.setup()
+    const spy = sinon.spy(console, 'error')
+    setup({
+      text: fixtureText({
+        tweak: (p) => {
+          p.channels.push('APP')
+        },
+      }),
+    })
+    await user.click(screen.getByRole('button', {name: /^Channel/}))
+    expect(spy.getCalls().filter((c) => String(c.args[0]).includes('same key'))).to.have.length(0)
   })
 })

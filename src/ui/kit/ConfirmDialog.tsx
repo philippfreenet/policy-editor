@@ -4,6 +4,8 @@ import {useRef} from 'react'
 interface ConfirmDialogProps {
   children: React.ReactNode
   confirmLabel: string
+  /** Sperrt den Bestätigen-Knopf, solange die Eingabe im Dialog ungültig ist. */
+  confirmDisabled?: boolean
   /** Färbt den Bestätigen-Knopf als gefährliche Aktion. */
   danger?: boolean
   onCancel: () => void
@@ -15,6 +17,7 @@ interface ConfirmDialogProps {
 /** Bestätigungsdialog; der Fokus startet auf „Abbrechen“ und kehrt beim Schließen zum Auslöser zurück. */
 export function ConfirmDialog({
   children,
+  confirmDisabled = false,
   confirmLabel,
   danger = false,
   onCancel,
@@ -43,7 +46,8 @@ export function ConfirmDialog({
               Abbrechen
             </button>
             <button
-              className={`min-h-6 rounded px-3 py-1 outline-accent focus-visible:outline-2 ${danger ? 'bg-danger text-canvas' : 'bg-accent text-on-accent'}`}
+              className={`min-h-6 rounded px-3 py-1 outline-accent focus-visible:outline-2 disabled:opacity-50 ${danger ? 'bg-danger text-canvas' : 'bg-accent text-on-accent'}`}
+              disabled={confirmDisabled}
               onClick={onConfirm}
               type="button"
             >

@@ -19,11 +19,32 @@ interface RightInspectorProps {
   dispatch: (action: EditorAction) => void
   findings: readonly Finding[]
   index: number
+  /** Feld, das in den Blick gerückt und fokussiert werden soll (name, description, roles, channels, condition). */
+  jumpField: string | null
+  /** Wird gemeldet, sobald der Namensfeld-Start verbraucht ist. */
   onAutoEditDone: () => void
+  /** Wird gemeldet, sobald der Feldsprung ausgeführt wurde. */
+  onJumpDone: () => void
   onDeleted: () => void
   onMoved: (index: number) => void
   policy: PolicyFile
   right: RightDef
+}
+
+/**
+ * Übernimmt die Auswahl des Channel-Pickers. „alle“ liefert nur bekannte Channels; bereits gesetzte
+ * unbekannte Channels bleiben dann erhalten (bekannte werden angefügt). „keine“ leert die Liste.
+ */
+function mergeChannelSelection(args: {current: readonly string[]; known: readonly string[]; next: string[]}): string[] {
+  const {current, known, next} = args
+  if (next.length === 0) {
+    return []
+  }
+  const lostUnknown = current.some((c) => !known.includes(c) && !next.includes(c))
+  if (!lostUnknown) {
+    return next
+  }
+  return [...current, ...known.filter((c) => !current.includes(c))]
 }
 
 /** Entfernt genau den Eintrag an der Position aus der Liste. */
@@ -53,14 +74,18 @@ function FieldFindings({findings}: FieldFindingsProps): React.JSX.Element | null
 
 interface RowProps {
   children: React.ReactNode
+  /** Feldschlüssel für den Sprung aus Befunden (roles, channels, condition). */
+  field: string
+  /** Beschriftung der Zeile. */
   label: string
 }
 
 /** Zeile „Wer / Wo / Wann“ mit kleiner Beschriftung links. */
-function Row({children, label}: RowProps): React.JSX.Element {
+function Row({children, field, label}: RowProps): React.JSX.Element {
   return (
     <section
       aria-label={label}
+      data-field={field}
       className="grid grid-cols-1 gap-1 border-t border-line py-3 sm:grid-cols-[5rem_minmax(0,1fr)]"
     >
       <h3 className="pt-1 text-xs font-semibold tracking-wide text-muted uppercase">{label}</h3>
@@ -75,7 +100,9 @@ export function RightInspector({
   dispatch,
   findings,
   index,
+  jumpField,
   onAutoEditDone,
+  onJumpDone,
   onDeleted,
   onMoved,
   policy,
@@ -85,10 +112,11 @@ export function RightInspector({
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [targetId, setTargetId] = useState(String(index + 1))
   const [showAllChannels, setShowAllChannels] = useState(false)
-  const nameRef = useRef<HTMLDivElement>(null)
+  const rootRef = useRef<HTMLDivElement>(null)
   const total = policy.rights.length
   const prefix = `rights[${index}]`
   const own = findingsAt({findings, prefix})
+  /** Befunde, die genau am Feld oder darunter liegen. */
   const at = (field: string): Finding[] =>
     own.filter((f) => f.path === `${prefix}.${field}` || f.path.startsWith(`${prefix}.${field}[`))
   const known = ['name', 'description', 'roles', 'channels', 'condition']
@@ -104,10 +132,20 @@ export function RightInspector({
 
   useEffect(() => {
     if (autoEditName) {
-      nameRef.current?.querySelector('button')?.click()
       onAutoEditDone()
     }
   }, [autoEditName, onAutoEditDone])
+
+  /* Feldsprung: Block in den Blick holen und das erste bedienbare Element fokussieren */
+  useEffect(() => {
+    if (jumpField === null) {
+      return
+    }
+    const block = rootRef.current?.querySelector<HTMLElement>(`[data-field="${jumpField}"]`)
+    block?.scrollIntoView({block: 'nearest'})
+    block?.querySelector<HTMLElement>('button, input, a[href]')?.focus()
+    onJumpDone()
+  }, [jumpField, onJumpDone])
 
   /** Ändert das Recht anhand seines aktuellen Stands (nicht des gerenderten). */
   function update(args: {change: (r: RightDef) => RightDef; coalesce?: string}): void {
@@ -135,38 +173,45 @@ export function RightInspector({
     return null
   }
 
-  const parsedTarget = Number(targetId)
-  const clampedTarget = Number.isFinite(parsedTarget)
-    ? Math.min(Math.max(Math.round(parsedTarget), 1), total)
-    : index + 1
-  const moveCount = Math.abs(clampedTarget - 1 - index)
+  const parsedTarget = /^\d+$/.test(targetId.trim()) ? Number(targetId.trim()) : Number.NaN
+  const targetValid = Number.isInteger(parsedTarget) && parsedTarget >= 1 && parsedTarget <= total
+  const moveCount = targetValid ? Math.abs(parsedTarget - 1 - index) : 0
+  /** Ein Channel, der nicht in der Channel-Liste der Policy steht. */
   const unknownChannel = (channel: string): boolean => !policy.channels.includes(channel)
   const channelEntries = right.channels.map((channel, i) => ({channel, i}))
   /* Unbekannte Channels bleiben auch eingeklappt sichtbar, damit Fehler nicht verborgen sind */
   const shownChannels =
-    showAllChannels || channelEntries.length <= CHANNEL_LIMIT + 1
+    showAllChannels || channelEntries.length <= CHANNEL_LIMIT
       ? channelEntries
       : channelEntries.filter(({channel}, position) => position < CHANNEL_LIMIT || unknownChannel(channel))
 
   return (
-    <div className="min-w-0">
+    <div className="min-w-0" ref={rootRef}>
       <div className="flex items-start gap-2 pb-2">
         <div className="min-w-0 flex-1">
-          <h2 className="min-w-0 break-words">
-            <span data-field="name" ref={nameRef}>
-              <InlineEdit ariaLabel="Name" mono onCommit={rename} size="lg" value={right.name} />
-            </span>
-          </h2>
+          <h2 className="sr-only min-w-0 break-words">{right.name}</h2>
+          <div data-field="name">
+            <InlineEdit
+              ariaLabel="Name"
+              mono
+              onCommit={rename}
+              size="lg"
+              startEditing={autoEditName}
+              value={right.name}
+            />
+          </div>
           <FieldFindings findings={at('name')} />
-          <InlineEdit
-            ariaLabel="Beschreibung"
-            onCommit={(description) => {
-              update({change: (r) => ({...r, description}), coalesce: `right-${index}-description`})
-              return null
-            }}
-            placeholder="Beschreibung hinzufügen"
-            value={right.description}
-          />
+          <div data-field="description">
+            <InlineEdit
+              ariaLabel="Beschreibung"
+              onCommit={(description) => {
+                update({change: (r) => ({...r, description}), coalesce: `right-${index}-description`})
+                return null
+              }}
+              placeholder="Beschreibung hinzufügen"
+              value={right.description}
+            />
+          </div>
           <FieldFindings findings={at('description')} />
           <FieldFindings findings={general} />
         </div>
@@ -186,7 +231,7 @@ export function RightInspector({
         />
       </div>
 
-      <Row label="Wer">
+      <Row field="roles" label="Wer">
         <div className="flex flex-wrap items-center gap-1">
           {right.roles.map((role, i) => (
             <Chip
@@ -213,7 +258,7 @@ export function RightInspector({
         <FieldFindings findings={at('roles')} />
       </Row>
 
-      <Row label="Wo">
+      <Row field="channels" label="Wo">
         <div className="flex flex-wrap items-center gap-1">
           {shownChannels.map(({channel, i}) => (
             <Chip
@@ -236,7 +281,7 @@ export function RightInspector({
               + {channelEntries.length - shownChannels.length} weitere
             </button>
           )}
-          {showAllChannels && channelEntries.length > CHANNEL_LIMIT + 1 && (
+          {showAllChannels && channelEntries.length > CHANNEL_LIMIT && (
             <button
               className="min-h-6 rounded px-2 text-accent outline-accent hover:bg-accent-soft focus-visible:outline-2"
               onClick={() => setShowAllChannels(false)}
@@ -247,10 +292,15 @@ export function RightInspector({
           )}
           <ChipSelect
             label="+ Channel"
-            onChange={(channels) => {
-              update({change: (r) => ({...r, channels})})
+            onChange={(next) => {
+              update({
+                change: (r) => ({
+                  ...r,
+                  channels: mergeChannelSelection({current: r.channels, known: policy.channels, next}),
+                }),
+              })
             }}
-            options={policy.channels}
+            options={[...new Set(policy.channels)]}
             searchable
             selected={right.channels}
             showAllNone
@@ -260,7 +310,7 @@ export function RightInspector({
         <FieldFindings findings={at('channels')} />
       </Row>
 
-      <Row label="Wann">
+      <Row field="condition" label="Wann">
         <ConditionBuilder
           findings={own}
           onChange={(next) => {
@@ -278,12 +328,13 @@ export function RightInspector({
       </Row>
 
       <ConfirmDialog
+        confirmDisabled={!targetValid}
         confirmLabel="Verschieben"
         onCancel={() => setMoveOpen(false)}
         onConfirm={() => {
           setMoveOpen(false)
-          const to = clampedTarget - 1
-          if (to !== index) {
+          const to = parsedTarget - 1
+          if (targetValid && to !== index) {
             dispatch({apply: (p) => moveRight({from: index, policy: p, to}), type: 'edit'})
             onMoved(to)
           }
@@ -303,7 +354,17 @@ export function RightInspector({
           />
         </label>
         <p className="text-muted">Erlaubt sind die IDs 1 bis {total}.</p>
-        <p className="mt-2">Die IDs von {moveCount} Rechten verschieben sich.</p>
+        {targetValid ? (
+          <p className="mt-2">
+            {moveCount === 1
+              ? 'Die ID von 1 Recht verschiebt sich.'
+              : `Die IDs von ${moveCount} Rechten verschieben sich.`}
+          </p>
+        ) : (
+          <p className="mt-2 text-danger" role="alert">
+            Bitte eine ganze Zahl von 1 bis {total} eingeben.
+          </p>
+        )}
       </ConfirmDialog>
 
       <ConfirmDialog
@@ -318,7 +379,10 @@ export function RightInspector({
         open={deleteOpen}
         title="Recht löschen"
       >
-        Recht {right.name} löschen? Die IDs von {total - index - 1} folgenden Rechten verschieben sich.
+        Recht {right.name} löschen?{' '}
+        {total - index - 1 === 1
+          ? 'Die ID von 1 folgenden Recht verschiebt sich.'
+          : `Die IDs von ${total - index - 1} folgenden Rechten verschieben sich.`}
       </ConfirmDialog>
     </div>
   )

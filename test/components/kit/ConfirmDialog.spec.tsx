@@ -70,4 +70,14 @@ describe('ConfirmDialog', () => {
     await user.click(screen.getByRole('button', {name: 'Abbrechen'}))
     expect(document.activeElement).to.equal(trigger)
   })
+
+  it('Fehlschlag: confirmDisabled sperrt den Bestätigen-Knopf', () => {
+    const onConfirm = sinon.spy()
+    render(
+      <ConfirmDialog confirmDisabled confirmLabel="Los" onCancel={() => {}} onConfirm={onConfirm} open title="T">
+        x
+      </ConfirmDialog>,
+    )
+    expect((screen.getByRole('button', {name: 'Los'}) as HTMLButtonElement).disabled).to.equal(true)
+  })
 })

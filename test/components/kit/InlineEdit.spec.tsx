@@ -120,4 +120,9 @@ describe('InlineEdit', () => {
     expect(screen.queryByText('Name vergeben')).to.equal(null)
     expect(screen.getByRole('button', {name: 'Name: alt'})).to.exist
   })
+
+  it('Erfolg: startEditing öffnet das Feld sofort und fokussiert es', () => {
+    render(<InlineEdit ariaLabel="Name" onCommit={() => null} startEditing value="alt" />)
+    expect(document.activeElement).to.equal(screen.getByRole('textbox', {name: 'Name'}))
+  })
 })

@@ -86,7 +86,7 @@ export function RightList({
 }: RightListProps): React.JSX.Element {
   const providerNames = [...new Set(policy.providers.map((p) => p.name))].sort((a, b) => a.localeCompare(b))
   const options: Record<FilterKey, readonly string[]> = {
-    channel: policy.channels,
+    channel: [...new Set(policy.channels)],
     provider: providerNames,
     role: USER_ROLES,
   }
@@ -163,7 +163,12 @@ export function RightList({
           </button>
         </div>
       )}
-      <ul aria-label="Rechte" className="flex flex-col divide-y divide-line border-y border-line">
+      <ul
+        aria-label="Rechte"
+        className="flex flex-col divide-y divide-line border-y border-line outline-accent focus-visible:outline-2"
+        id="rights-list"
+        tabIndex={-1}
+      >
         {visible.map((index) => {
           const right = policy.rights[index]
           if (right === undefined) {
