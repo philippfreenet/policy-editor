@@ -22,7 +22,7 @@ export function DiffDialog({current, onClose, open, original}: DiffDialogProps):
   const rows = buildDiffRows({context: 3, current, original: original ?? ''})
   return (
     <Dialog className="relative z-40" onClose={onClose} open={open}>
-      <div aria-hidden="true" className="fixed inset-0 bg-black/40" />
+      <div aria-hidden="true" className="fixed inset-0 bg-scrim" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <DialogPanel className="flex max-h-[85vh] w-full max-w-4xl flex-col rounded border border-line-strong bg-surface text-fg">
           <div className="flex items-center justify-between border-b border-line px-4 py-3">

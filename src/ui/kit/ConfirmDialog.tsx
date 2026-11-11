@@ -29,7 +29,7 @@ export function ConfirmDialog({
 
   return (
     <Dialog className="relative z-40" initialFocus={cancelRef} onClose={onCancel} open={open}>
-      <div aria-hidden="true" className="fixed inset-0 bg-black/40" />
+      <div aria-hidden="true" className="fixed inset-0 bg-scrim" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <DialogPanel className="w-full max-w-md rounded border border-line-strong bg-surface p-4 text-fg">
           <DialogTitle className="text-base font-semibold break-words">{title}</DialogTitle>

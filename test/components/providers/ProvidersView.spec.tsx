@@ -243,4 +243,21 @@ describe('ProvidersView', () => {
     expect((screen.getByRole('combobox', {name: 'Klasse'}) as HTMLSelectElement).value).to.equal('GibtEsNicht')
     expect(screen.getByRole('option', {name: 'GibtEsNicht (unbekannt)'})).to.exist
   })
+
+  it('Erfolg: Parameter-Überschrift erscheint nur einmal sichtbar, die Legende bleibt für Hilfstechnik', () => {
+    setup({index: 4})
+    const legend = document.querySelector('legend') as HTMLElement
+    expect(legend.className).to.contain('sr-only')
+    expect(screen.getAllByText('Parameter', {selector: 'h3'})).to.have.length(1)
+  })
+
+  it('Erfolg: Parameterwerte nutzen den neutralen Ton statt des „Wo“-Grüns', () => {
+    setup({index: 4})
+    const chips = document.querySelectorAll('ul[aria-label^="Werte von"] > li.rounded-full')
+    expect(chips.length).to.be.greaterThan(0)
+    for (const chip of chips) {
+      expect(chip.className).to.contain('bg-sidebar')
+      expect(chip.className).to.not.contain('bg-where')
+    }
+  })
 })

@@ -92,6 +92,13 @@ describe('RightsView', () => {
     expect(screen.queryByRole('button', {name: 'Filter Channel entfernen'})).to.equal(null)
   })
 
+  it('Erfolg: fokussierte Filteroption hat einen sichtbaren Rahmen und das Menü ist verankert', async () => {
+    const user = userEvent.setup()
+    setup()
+    await user.click(screen.getByRole('button', {name: /^Rolle/}))
+    expect(screen.getByRole('option', {name: 'SYSTEM'}).className).to.contain('data-focus:outline-accent')
+  })
+
   it('Erfolg: Filter-Menü setzt genau einen Wert pro Dimension', async () => {
     const user = userEvent.setup()
     setup()
@@ -146,6 +153,11 @@ describe('RightsView', () => {
     await user.clear(field)
     await user.type(field, '1')
     expect(screen.getByText('Die IDs von 3 Rechten verschieben sich.')).to.exist
+    const preview = screen.getByTestId('move-preview').textContent ?? ''
+    const names = JSON.parse(FIXTURE)
+      .rights.slice(0, 3)
+      .map((r: {name: string}) => r.name)
+    expect(preview).to.equal(`Betroffen: ${names.join(', ')}`)
     await user.click(screen.getByRole('button', {name: 'Verschieben'}))
     expect(latest.policy?.rights[0]?.name).to.equal('SimkarteSperren')
     expect(screen.getByText('ID 1')).to.exist

@@ -68,7 +68,7 @@ function Row({children, field, label}: RowProps): React.JSX.Element {
     <section
       aria-label={label}
       data-field={field}
-      className="grid grid-cols-1 gap-1 border-t border-line py-3 sm:grid-cols-[5rem_minmax(0,1fr)]"
+      className="grid grid-cols-1 gap-1 border-t border-line py-3 sm:grid-cols-[7.5rem_minmax(0,1fr)] sm:gap-x-3"
     >
       <h3 className="pt-1 text-xs font-semibold tracking-wide text-muted uppercase">{label}</h3>
       <div className="min-w-0">{children}</div>
@@ -154,6 +154,13 @@ export function RightInspector({
   const parsedTarget = /^\d+$/.test(targetId.trim()) ? Number(targetId.trim()) : Number.NaN
   const targetValid = Number.isInteger(parsedTarget) && parsedTarget >= 1 && parsedTarget <= total
   const moveCount = targetValid ? Math.abs(parsedTarget - 1 - index) : 0
+  /* Rechte, deren ID sich beim Verschieben ändert (ohne das verschobene Recht selbst) */
+  const shifted = targetValid
+    ? policy.rights.slice(
+        Math.min(index + 1, parsedTarget - 1),
+        Math.max(index, parsedTarget - 1) + (parsedTarget - 1 > index ? 1 : 0),
+      )
+    : []
   /** Ein Channel, der nicht in der Channel-Liste der Policy steht. */
   const unknownChannel = (channel: string): boolean => !policy.channels.includes(channel)
   const channelEntries = right.channels.map((channel, i) => ({channel, i}))
@@ -337,6 +344,16 @@ export function RightInspector({
             {moveCount === 1
               ? 'Die ID von 1 Recht verschiebt sich.'
               : `Die IDs von ${moveCount} Rechten verschieben sich.`}
+            {shifted.length > 0 && (
+              <span className="mt-1 block text-muted break-words" data-testid="move-preview">
+                Betroffen:{' '}
+                {shifted
+                  .slice(0, 5)
+                  .map((right) => right.name)
+                  .join(', ')}
+                {shifted.length > 5 ? ', …' : ''}
+              </span>
+            )}
           </p>
         ) : (
           <p className="mt-2 text-danger" role="alert">

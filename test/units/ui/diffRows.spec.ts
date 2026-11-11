@@ -1,5 +1,5 @@
 import {expect} from 'chai'
-import {buildDiffRows, isUnchanged} from '../../../src/ui/diffRows.ts'
+import {buildDiffRows, countChangedLines, isUnchanged} from '../../../src/ui/diffRows.ts'
 
 const lines = (n: number): string => Array.from({length: n}, (_, i) => `z${i + 1}`).join('\n') + '\n'
 
@@ -44,5 +44,17 @@ describe('buildDiffRows', () => {
     const rows = buildDiffRows({context: 3, current: 'a\nb\n', original: ''})
     expect(rows.map((r) => r.kind)).to.deep.equal(['added', 'added'])
     expect(isUnchanged({rows})).to.equal(false)
+  })
+})
+
+describe('countChangedLines', () => {
+  it('Erfolg: zählt hinzugefügte und entfernte Zeilen gegen das Original', () => {
+    const original = lines(5)
+    expect(countChangedLines({current: original.replace('z2\n', 'neu\n'), original})).to.equal(2)
+    expect(countChangedLines({current: original, original})).to.equal(0)
+  })
+
+  it('Erfolg: ohne Original zählt jede Zeile als neu', () => {
+    expect(countChangedLines({current: lines(4), original: null})).to.equal(4)
   })
 })

@@ -31,7 +31,7 @@ Für den statischen Produktions-Build: `npm run build`, danach `npm run preview`
 - Rechteliste durchsuchbar mit Freitext und den Schlüsseln `rolle:`, `channel:` und `provider:` (in beliebiger Tiefe der Bedingung), zusätzlich über Filtermenüs
 - Provider-Inspektor mit Parametern und den Rechten, die den Provider verwenden
 - Ansicht „Übersicht“: Matrix Rolle × Channel mit der Anzahl der Rechte je Zelle; eine Zelle listet ihre Rechte mit Bedingung und öffnet sie per Klick
-- Tastenkürzel: `/` springt in die Suche der aktuellen Ansicht, `↑` / `↓` verschieben die Auswahl in der Rechte- und Providerliste (Fokus in der Liste), `Strg/⌘+Z`, `Strg/⌘+⇧+Z`, `Strg+Y` für Rückgängig/Wiederholen (bis 100 Schritte, auch über die Kopfleiste); in Textfeldern und bei offenem Dialog greift kein Kürzel, dort bleibt das Rückgängig des Browsers aktiv
+- Tastenkürzel: `/` springt in die Suche der aktuellen Ansicht (in Rechte und Provider), `↑` / `↓` verschieben die Auswahl in der Rechte- und Providerliste (Fokus in der Liste), `Strg/⌘+Z`, `Strg/⌘+⇧+Z`, `Strg+Y` für Rückgängig/Wiederholen (bis 100 Schritte, auch über die Kopfleiste); in Textfeldern und bei offenem Dialog greift kein Kürzel, dort bleibt das Rückgängig des Browsers aktiv
 - Bestätigungsdialoge vor dem Löschen, vor dem Verwerfen ungespeicherter Änderungen und vor dem Herunterladen einer Datei mit Fehlern
 - Dunkelmodus folgt der Systemeinstellung (`prefers-color-scheme`); Animationen entfallen bei `prefers-reduced-motion`
 - Validierung nach den Regeln des Starts von `DatabaseService` im `policy-service`; Befunde tragen einen Pfad, über den die UI zur Stelle springt (Prüf-Panel)

@@ -38,7 +38,7 @@ function Block({children, field, label}: BlockProps): React.JSX.Element {
   return (
     <section
       aria-label={label}
-      className="grid grid-cols-1 gap-1 border-t border-line py-3 sm:grid-cols-[6rem_minmax(0,1fr)]"
+      className="grid grid-cols-1 gap-1 border-t border-line py-3 sm:grid-cols-[7.5rem_minmax(0,1fr)] sm:gap-x-3"
       data-field={field}
     >
       <h3 className="pt-1 text-xs font-semibold tracking-wide text-muted uppercase">{label}</h3>

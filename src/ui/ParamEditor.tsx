@@ -32,7 +32,7 @@ export function ParamEditor({idPrefix, onChange, params, suggestions}: ParamEdit
 
   return (
     <fieldset className="flex min-w-0 flex-col gap-2">
-      <legend className="text-xs font-semibold tracking-wide text-muted uppercase">Parameter</legend>
+      <legend className="sr-only">Parameter</legend>
       <datalist id={listId}>
         {suggestions.map((name) => (
           <option key={name} value={name} />

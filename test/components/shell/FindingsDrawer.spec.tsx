@@ -2,7 +2,17 @@ import {cleanup, render, screen} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import {expect} from 'chai'
 import sinon from 'sinon'
+import type {PolicyFile} from '../../../src/model/PolicyTypes.ts'
 import {FindingsDrawer} from '../../../src/ui/shell/FindingsDrawer.tsx'
+
+const POLICY: PolicyFile = {
+  channels: [],
+  providers: [],
+  rights: [
+    {channels: [], name: 'Eins', description: '', roles: []},
+    {channels: [], name: 'Zwei', description: '', roles: []},
+  ],
+}
 
 describe('FindingsDrawer', () => {
   afterEach(cleanup)
@@ -16,11 +26,14 @@ describe('FindingsDrawer', () => {
         onClose={() => undefined}
         onSelect={onSelect}
         open
+        policy={POLICY}
         showUnknownFieldHint={false}
       />,
     )
     await userEvent.click(screen.getByRole('button', {name: /Name fehlt/}))
     expect(onSelect.calledWith('rights[1].name')).to.equal(true)
+    expect(screen.getByText('Recht #2 Zwei · Name')).to.not.equal(null)
+    expect(screen.getByText('rights[1].name').className).to.contain('font-mono')
   })
 
   it('Fehlschlag: ohne Befunde steht „Keine Befunde.“ da', () => {
@@ -31,6 +44,7 @@ describe('FindingsDrawer', () => {
         onClose={() => undefined}
         onSelect={() => undefined}
         open
+        policy={POLICY}
         showUnknownFieldHint
       />,
     )

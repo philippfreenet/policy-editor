@@ -5,7 +5,8 @@ interface StartScreenProps {
   hasAutosave: boolean
   onCancel: (() => void) | null
   onClearError: () => void
-  onLoad: (text: string) => void
+  /** Meldet den Text und bei Dateien deren Namen. */
+  onLoad: (text: string, fileName?: string) => void
   onNew: () => void
   onResume: (() => void) | null
 }
@@ -34,7 +35,7 @@ export function StartScreen({
     try {
       const content = await file.text()
       setReadError(null)
-      onLoad(content)
+      onLoad(content, file.name)
     } catch (e) {
       setReadError(`Datei konnte nicht gelesen werden: ${e instanceof Error ? e.message : String(e)}`)
     }

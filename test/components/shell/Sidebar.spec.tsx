@@ -30,6 +30,14 @@ function setup(args: Partial<Parameters<typeof Sidebar>[0]> = {}): {
 describe('Sidebar', () => {
   afterEach(cleanup)
 
+  it('Erfolg: Seitenleiste bleibt am Fenster haften, damit Änderungen und Status sichtbar sind', () => {
+    setup()
+    const classes = screen.getByRole('navigation', {name: 'Bereiche'}).closest('aside')?.className ?? ''
+    expect(classes).to.contain('lg:sticky')
+    expect(classes).to.contain('lg:h-screen')
+    expect(classes).to.contain('lg:overflow-y-auto')
+  })
+
   it('Erfolg: aktive Ansicht hat aria-current', () => {
     setup()
     const nav = screen.getByRole('navigation', {name: 'Bereiche'})

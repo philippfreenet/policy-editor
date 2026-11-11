@@ -54,3 +54,9 @@ export function buildDiffRows(args: {context: number; current: string; original:
 export function isUnchanged(args: {rows: DiffRow[]}): boolean {
   return args.rows.every((row) => row.kind === 'context' || row.kind === 'collapsed')
 }
+
+/** Anzahl der hinzugefügten und entfernten Zeilen des aktuellen Texts gegenüber dem Original; ohne Original zählt jede Zeile als neu. */
+export function countChangedLines(args: {current: string; original: string | null}): number {
+  const rows = buildDiffRows({context: 0, current: args.current, original: args.original ?? ''})
+  return rows.filter((row) => row.kind === 'added' || row.kind === 'removed').length
+}

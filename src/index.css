@@ -23,6 +23,7 @@
   --color-warn: #92400e;
   --color-warn-soft: #fffbeb;
   --color-ok: #15803d;
+  --color-scrim: rgb(0 0 0 / 0.4);
   --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
 }
@@ -50,6 +51,7 @@
     --color-warn: #fbbf24;
     --color-warn-soft: #2b2110;
     --color-ok: #4ade80;
+    --color-scrim: rgb(0 0 0 / 0.7);
   }
 }
 

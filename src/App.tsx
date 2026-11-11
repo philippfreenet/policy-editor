@@ -5,6 +5,7 @@ import {ChannelsView} from './ui/channels/ChannelsView.tsx'
 import {downloadText} from './ui/download.ts'
 import {ConfirmDialog} from './ui/kit/ConfirmDialog.tsx'
 import {Toast} from './ui/kit/Toast.tsx'
+import {countChangedLines} from './ui/diffRows.ts'
 import {changedRights} from './ui/logic/changedRights.ts'
 import {viewTarget} from './ui/logic/viewTarget.ts'
 import type {View} from './ui/logic/viewTarget.ts'
@@ -39,6 +40,7 @@ export function App(): React.JSX.Element {
   const [selection, setSelection] = useState<EntrySelection | null>(null)
   const [pendingDiscard, setPendingDiscard] = useState<(() => void) | null>(null)
   const [confirmDownload, setConfirmDownload] = useState(false)
+  const [loadedName, setLoadedName] = useState<string | null>(null)
   const [toast, setToast] = useState<{id: number; message: string} | null>(null)
 
   const clearError = (): void => dispatch({type: 'clearError'})
@@ -81,10 +83,12 @@ export function App(): React.JSX.Element {
   }
 
   /** Lädt Text als neue Policy und kehrt bei Erfolg in den Editor zurück. */
-  function load(text: string): void {
+  function load(args: {name: string | null; text: string}): void {
+    const {name, text} = args
     runUnlessDiscarding(() => {
       dispatch({text, type: 'load'})
       if (loadSucceeds({text})) {
+        setLoadedName(name ?? 'Eingefügter Text')
         setReloading(false)
         setSelection(null)
         setView('rights')
@@ -117,10 +121,11 @@ export function App(): React.JSX.Element {
           hasAutosave={state.policy !== null}
           onCancel={null}
           onClearError={clearError}
-          onLoad={load}
+          onLoad={(text, name) => load({name: name ?? null, text})}
           onNew={() =>
             runUnlessDiscarding(() => {
               dispatch({type: 'new'})
+              setLoadedName(null)
               setReloading(false)
               setSelection(null)
               setView('rights')
@@ -138,6 +143,8 @@ export function App(): React.JSX.Element {
   const errorCount = findings.filter((f) => f.severity === 'error').length
   const warningCount = findings.length - errorCount
   const changed = changedRights({original: state.original, policy})
+  const serialized = serializePolicy({policy})
+  const changedLines = countChangedLines({current: serialized, original: state.original})
   const showUnknownFieldHint = state.parseFindings.some((f) => f.message.startsWith('Unbekanntes Feld'))
 
   /** Lädt die aktuelle Policy herunter und zeigt die Bestätigungsmeldung. */
@@ -181,6 +188,7 @@ export function App(): React.JSX.Element {
             onClose={() => setFindingsOpen(false)}
             onSelect={select}
             open={findingsOpen}
+            policy={policy}
             showUnknownFieldHint={showUnknownFieldHint}
           />
         }
@@ -188,7 +196,7 @@ export function App(): React.JSX.Element {
         onClearError={clearError}
         sidebar={
           <Sidebar
-            changedCount={changed.size}
+            changedCount={changedLines}
             counts={{
               channels: policy.channels.length,
               providers: policy.providers.length,
@@ -209,7 +217,7 @@ export function App(): React.JSX.Element {
           <TopBar
             canRedo={state.future.length > 0}
             canUndo={state.past.length > 0}
-            fileLabel={state.original === null ? 'Neue Konfiguration' : 'policy.json'}
+            fileLabel={state.original === null ? 'Neue Konfiguration' : (loadedName ?? 'policy.json')}
             onDownload={download}
             onRedo={() => dispatch({type: 'redo'})}
             onReload={() => setReloading(true)}
@@ -241,12 +249,7 @@ export function App(): React.JSX.Element {
         {view === 'overview' && <OverviewView onOpenRight={openRight} policy={policy} />}
       </AppShell>
       {diffOpen && (
-        <DiffDialog
-          current={serializePolicy({policy})}
-          onClose={() => setDiffOpen(false)}
-          open
-          original={state.original}
-        />
+        <DiffDialog current={serialized} onClose={() => setDiffOpen(false)} open original={state.original} />
       )}
       <ConfirmDialog
         confirmLabel="Herunterladen"

@@ -1,5 +1,6 @@
 import {Dialog, DialogPanel, DialogTitle} from '@headlessui/react'
-import type {Finding} from '../../model/PolicyTypes.ts'
+import type {Finding, PolicyFile} from '../../model/PolicyTypes.ts'
+import {findingLocation} from '../logic/findingLocation.ts'
 import {viewTarget} from '../logic/viewTarget.ts'
 
 interface FindingsDrawerProps {
@@ -9,6 +10,7 @@ interface FindingsDrawerProps {
   onClose: () => void
   onSelect: (path: string) => void
   open: boolean
+  policy: PolicyFile
   showUnknownFieldHint: boolean
 }
 
@@ -19,11 +21,12 @@ export function FindingsDrawer({
   onClose,
   onSelect,
   open,
+  policy,
   showUnknownFieldHint,
 }: FindingsDrawerProps): React.JSX.Element {
   return (
     <Dialog className="relative z-30" onClose={onClose} open={open}>
-      <div aria-hidden="true" className="fixed inset-0 bg-black/30" />
+      <div aria-hidden="true" className="fixed inset-0 bg-scrim" />
       <div className="fixed inset-y-0 right-0 flex w-full max-w-sm">
         <DialogPanel className="flex w-full flex-col gap-3 overflow-auto border-l border-line-strong bg-surface p-4 text-fg">
           <div className="flex items-center justify-between gap-2">
@@ -53,8 +56,9 @@ export function FindingsDrawer({
                 const content = (
                   <>
                     <span className="font-semibold">{isError ? 'Fehler' : 'Warnung'}</span>
-                    <span className="ml-2 font-mono">{finding.path}</span>
+                    <span className="ml-2">{findingLocation({path: finding.path, policy})}</span>
                     <span className="mt-0.5 block">{finding.message}</span>
+                    <span className="block font-mono text-muted">{finding.path}</span>
                   </>
                 )
                 return (

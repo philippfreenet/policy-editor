@@ -42,7 +42,7 @@ export function Sidebar({
   ]
   const clean = errorCount === 0 && warningCount === 0
   return (
-    <aside className="flex flex-col gap-4 border-b border-line bg-sidebar p-3 lg:border-r lg:border-b-0">
+    <aside className="flex flex-col gap-4 border-b border-line bg-sidebar p-3 lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto lg:border-r lg:border-b-0">
       <h1 className="px-2 text-base font-semibold">policy-editor</h1>
       <nav aria-label="Bereiche">
         <ul className="flex flex-wrap gap-1 lg:flex-col">

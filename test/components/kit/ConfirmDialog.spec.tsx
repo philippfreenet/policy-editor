@@ -46,6 +46,15 @@ describe('ConfirmDialog', () => {
     expect(onConfirm.calledOnce).to.equal(true)
   })
 
+  it('Erfolg: Hintergrund nutzt das Scrim-Token und das Panel hat einen Rahmen', async () => {
+    const user = userEvent.setup()
+    render(<Harness />)
+    await user.click(screen.getByRole('button', {name: 'Auslöser'}))
+    const dialog = screen.getByRole('dialog')
+    expect(dialog.querySelector('.bg-scrim')).to.not.equal(null)
+    expect(dialog.querySelector('.border-line-strong')).to.not.equal(null)
+  })
+
   it('Fehlschlag: Escape ruft onCancel', async () => {
     const user = userEvent.setup()
     const onCancel = sinon.spy()

@@ -34,10 +34,13 @@ function FilterMenu({filterKey, onChange, options, value}: FilterMenuProps): Rea
         <ListboxButton className={BUTTON}>
           {FILTER_LABEL[filterKey]} <span aria-hidden="true">▾</span>
         </ListboxButton>
-        <ListboxOptions className="absolute left-0 z-30 mt-1 max-h-60 min-w-40 overflow-auto rounded border border-line-strong bg-surface py-1 outline-none">
+        <ListboxOptions
+          anchor="bottom start"
+          className="z-30 [--anchor-gap:4px] max-h-60 min-w-40 overflow-auto rounded border border-line-strong bg-surface py-1 outline-none"
+        >
           {['', ...options].map((option) => (
             <ListboxOption
-              className="min-h-6 cursor-pointer px-3 py-1 break-words data-focus:bg-sidebar data-selected:font-semibold"
+              className="min-h-6 cursor-pointer px-3 py-1 break-words data-focus:bg-sidebar data-focus:outline-2 data-focus:-outline-offset-2 data-focus:outline-accent data-selected:font-semibold"
               key={option}
               value={option}
             >

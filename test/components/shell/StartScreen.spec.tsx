@@ -1,4 +1,4 @@
-import {cleanup, render, screen} from '@testing-library/react'
+import {cleanup, render, screen, waitFor} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import {expect} from 'chai'
 import sinon from 'sinon'
@@ -45,5 +45,23 @@ describe('StartScreen', () => {
     await userEvent.paste('{}')
     await userEvent.click(screen.getByRole('button', {name: 'Laden'}))
     expect(onLoad.calledWith('{}')).to.equal(true)
+  })
+
+  it('Erfolg: eine gewählte Datei meldet Text und Dateinamen', async () => {
+    const onLoad = sinon.spy()
+    const {container} = render(
+      <StartScreen
+        error={null}
+        hasAutosave={false}
+        onCancel={null}
+        onClearError={() => undefined}
+        onLoad={onLoad}
+        onNew={() => undefined}
+        onResume={null}
+      />,
+    )
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement
+    await userEvent.upload(input, new File(['{}'], 'meine.json', {type: 'application/json'}))
+    await waitFor(() => expect(onLoad.calledWith('{}', 'meine.json')).to.equal(true))
   })
 })

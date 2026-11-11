@@ -110,7 +110,7 @@ export function ParamRow({listId, onChange, onRemove, param, rowId}: ParamRowPro
         {param.values.length === 0 && <li className="text-muted">Keine Werte.</li>}
         {param.values.map((value, i) => (
           <li
-            className="flex min-w-0 items-center gap-1 rounded-full bg-where text-where-fg py-0.5 pr-1 pl-2.5 font-mono break-all"
+            className="flex min-w-0 items-center gap-1 rounded-full bg-sidebar text-fg py-0.5 pr-1 pl-2.5 font-mono break-all"
             key={`${String(value)}-${i}`}
           >
             {String(value)}
