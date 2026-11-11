@@ -1,0 +1,32 @@
+{
+  "contract": "docs/superpowers/specs/2026-11-11-ui-redesign-design.md — Inspektor „Wer · Wo · Wann“, Block-Editor, Stil „Ruhig & dicht“, WCAG 2.2 AA, Zielbreiten 1440x900 und 1024x768, hell und dunkel",
+  "targetViewports": ["1440x900", "1024x768"],
+  "accessibility": {
+    "status": "pass",
+    "evidence": "Gerendert mit test/fixtures/policy-prod.json: Tastatur-Durchgang — „/“ fokussiert die Rechte-Suche, Tippen von „provider:Kein_Prepaidvertrag“ filtert auf 18 von 49 mit Filter-Chip, Tab erreicht die Filter-Knöpfe mit sichtbarem Fokusring, ↑/↓ wechseln in der gefilterten Liste (#11 → #12 → #11), ⌘Z macht die letzte Änderung rückgängig. Download-Dialog öffnet mit Fokus auf „Abbrechen“, Escape schließt und der Fokus kehrt auf „Herunterladen“ zurück. Befund-Klick im Prüf-Panel springt zum Recht und fokussiert den betroffenen Block. Kontraste der Tokens (hell/dunkel) laut Task-1/3-Berichten ≥ 4.5:1 für Text und ≥ 3:1 für Bedienrahmen (line-strong). prefers-reduced-motion-Regel im ausgelieferten CSS vorhanden (Übergangs- und Animationsdauer 0s). Combobox-, Menü- und Gruppen-Aktionen per Tastatur sind zusätzlich durch Komponententests (userEvent) abgedeckt."
+  },
+  "responsive": {
+    "status": "pass",
+    "evidence": "1440x900 und 1024x768: scrollWidth == innerWidth (kein horizontaler Überlauf) in Rechte- und Provider-Ansicht; 80-Zeichen-Name ohne Leerzeichen bricht in Liste und Überschrift um; Liste und Inspektor zweispaltig ab 1024 px, Seitenleiste fest."
+  },
+  "contentStates": {
+    "loading": {"status": "not-applicable", "reason": "Alle Daten liegen lokal vor; Laden und Prüfen laufen synchron im Browser ohne Netzwerkzugriff, es gibt keinen Wartezustand."},
+    "empty": {"status": "pass", "evidence": "Suche „gibtsnicht“: „0 von 49“, „Keine Treffer.“ und Knopf „Filter zurücksetzen“; Inspektor ohne Auswahl zeigt „Recht aus der Liste wählen oder ein neues anlegen.“"},
+    "error": {"status": "pass", "evidence": "Alle Rollen von #4 entfernt: Sidebar „1 Fehler · 0 Warnungen“, Fehlermarke am Listeneintrag, Hinweis „Mindestens eine Rolle wählen“ und Befundtext am Wer-Block, Prüf-Panel listet den Befund; Download öffnet den Fehler-Dialog."},
+    "partial": {"status": "pass", "evidence": "Datei mit unbekanntem Feld „extraFeld“ geladen: Prüf-Panel zeigt Warnbox „Unbekannte Felder werden beim Herunterladen verworfen.“ und den Hinweis unter „Hinweise zur geladenen Datei“, Editor bleibt voll nutzbar."},
+    "success": {"status": "pass", "evidence": "Herunterladen (Anker-Klick für die Prüfung abgefangen, keine Datei gespeichert): Statusmeldung „policy.json heruntergeladen“ unten rechts (role=status)."},
+    "permission": {"status": "not-applicable", "reason": "Das Werkzeug hat keine Anmeldung und keine Rollen; jede Person mit Zugriff auf die lokale Seite hat denselben Funktionsumfang."}
+  },
+  "renderedEvidence": [
+    {"viewport": "1440x900", "artifact": "1440x900-light-rights.jpg", "observation": "Hell: Rechte-Inspektor #4 SimkarteSperren mit Wer/Wo/Wann, verschachtelte Gruppen, NICHT-Kennzeichen, Formelzeile."},
+    {"viewport": "1440x900", "artifact": "1440x900-light-provider.jpg", "observation": "Hell: Provider-Inspektor Vertrag_aktiv mit Satzbeschreibung und Verwendet-von-Liste; offene Mängel V1 (Beschriftung läuft in den Wert) und V2 („PARAMETER“ doppelt)."},
+    {"viewport": "1024x768", "artifact": "1024x768-dark-provider.jpg", "observation": "Dunkel: Provider-Inspektor ohne Überlauf; Chips und Schalter lesbar."},
+    {"viewport": "1024x768", "artifact": "1024x768-dark-findings.jpg", "observation": "Dunkel: Prüf-Panel mit einem Fehler; Befund zeigt technischen Pfad (V3)."},
+    {"viewport": "1024x768", "artifact": "1024x768-dark-download-dialog.jpg", "observation": "Dunkel: Download-Dialog bei Fehlern, Fokus auf „Abbrechen“; Dialog ohne abgedunkelten Hintergrund (V4)."},
+    {"viewport": "1024x768", "artifact": "1024x768-dark-search-filter.jpg", "observation": "Dunkel: Suche mit provider:-Schlüssel, Filter-Chip, 18 von 49, sichtbarer Fokusring."},
+    {"viewport": "1024x768", "artifact": "1024x768-light-long-name.jpg", "observation": "Hell: 80-Zeichen-Name bricht in Liste und Überschrift um; Punkt „geändert“."},
+    {"viewport": "1024x768", "artifact": "1024x768-light-start.jpg", "observation": "Hell: Startbildschirm mit Ablagefläche, Einfügen, „Leere Konfiguration anlegen“, „Letzten Stand fortsetzen“."},
+    {"viewport": "1024x768", "artifact": "1024x768-light-partial.jpg", "observation": "Hell: Teilzustand unbekanntes Feld im Prüf-Panel."},
+    {"viewport": "1024x768", "artifact": "1024x768-light-empty-success.jpg", "observation": "Hell: Leerzustand der Suche und Erfolgsmeldung nach dem Download."}
+  ]
+}
