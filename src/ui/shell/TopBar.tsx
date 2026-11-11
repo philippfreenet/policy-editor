@@ -26,7 +26,7 @@ export function TopBar({
 }: TopBarProps): React.JSX.Element {
   return (
     <header className="flex flex-wrap items-center gap-2 border-b border-line px-4 py-2">
-      <h1 className="min-w-0 flex-1 truncate font-mono text-muted">{fileLabel}</h1>
+      <span className="min-w-0 flex-1 truncate font-mono text-muted">{fileLabel}</span>
       <button
         aria-keyshortcuts="Control+Z Meta+Z"
         className={BUTTON}

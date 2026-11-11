@@ -35,7 +35,7 @@ export function App(): React.JSX.Element {
   const [reloading, setReloading] = useState(false)
   const [diffOpen, setDiffOpen] = useState(false)
   const [findingsOpen, setFindingsOpen] = useState(false)
-  const [view, setView] = useState<View>('overview')
+  const [view, setView] = useState<View>('rights')
   const [selection, setSelection] = useState<EntrySelection | null>(null)
   const [pendingDiscard, setPendingDiscard] = useState<(() => void) | null>(null)
   const [confirmDownload, setConfirmDownload] = useState(false)
@@ -43,10 +43,11 @@ export function App(): React.JSX.Element {
 
   const clearError = (): void => dispatch({type: 'clearError'})
   const editing = state.policy !== null && !reloading
+  const dialogOpen = diffOpen || findingsOpen || confirmDownload || pendingDiscard !== null
 
   /* Tastenkürzel für Rückgängig/Wiederholen; Textfelder behalten ihr eigenes Undo */
   useEffect(() => {
-    if (!editing) {
+    if (!editing || dialogOpen) {
       return undefined
     }
     const onKeyDown = (event: KeyboardEvent): void => {
@@ -58,7 +59,7 @@ export function App(): React.JSX.Element {
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [dispatch, editing])
+  }, [dispatch, dialogOpen, editing])
 
   /** Führt die Aktion aus; weicht die Policy von der geladenen Datei ab, erst nach Bestätigung im Dialog. */
   function runUnlessDiscarding(action: () => void): void {
@@ -76,7 +77,7 @@ export function App(): React.JSX.Element {
       if (loadSucceeds({text})) {
         setReloading(false)
         setSelection(null)
-        setView('overview')
+        setView('rights')
       }
     })
   }
@@ -112,7 +113,7 @@ export function App(): React.JSX.Element {
               dispatch({type: 'new'})
               setReloading(false)
               setSelection(null)
-              setView('overview')
+              setView('rights')
             })
           }
           onResume={state.policy === null ? null : () => setReloading(false)}
@@ -213,12 +214,14 @@ export function App(): React.JSX.Element {
           />
         )}
       </AppShell>
-      <DiffDialog
-        current={serializePolicy({policy})}
-        onClose={() => setDiffOpen(false)}
-        open={diffOpen}
-        original={state.original}
-      />
+      {diffOpen && (
+        <DiffDialog
+          current={serializePolicy({policy})}
+          onClose={() => setDiffOpen(false)}
+          open
+          original={state.original}
+        />
+      )}
       <ConfirmDialog
         confirmLabel="Herunterladen"
         onCancel={() => setConfirmDownload(false)}

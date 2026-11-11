@@ -47,7 +47,9 @@ export function StartScreen({
         <p className="mt-1 text-muted">
           Bearbeitet die policy.json des policy-service. Alles läuft lokal im Browser, es werden keine Daten übertragen.
         </p>
-        {hasAutosave && <p className="mt-1 text-muted">Ein gespeicherter Stand ist vorhanden.</p>}
+        {hasAutosave && (
+          <p className="mt-1 text-muted">Aktueller Stand bleibt erhalten, bis eine neue Datei geladen wird.</p>
+        )}
       </header>
 
       {error !== null && (
@@ -134,7 +136,7 @@ export function StartScreen({
           Laden
         </button>
         <button className={BUTTON} onClick={onNew} type="button">
-          Leere Konfiguration
+          Leere Konfiguration anlegen
         </button>
         {onResume !== null && (
           <button className={BUTTON} onClick={onResume} type="button">

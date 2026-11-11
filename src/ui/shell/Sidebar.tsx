@@ -35,15 +35,15 @@ export function Sidebar({
   warningCount,
 }: SidebarProps): React.JSX.Element {
   const items: {count: number | null; label: string; view: View}[] = [
-    {count: null, label: 'Übersicht', view: 'overview'},
-    {count: counts.channels, label: 'Channels', view: 'channels'},
-    {count: counts.providers, label: 'Provider', view: 'providers'},
     {count: counts.rights, label: 'Rechte', view: 'rights'},
+    {count: counts.providers, label: 'Provider', view: 'providers'},
+    {count: counts.channels, label: 'Channels', view: 'channels'},
+    {count: null, label: 'Übersicht', view: 'overview'},
   ]
   const clean = errorCount === 0 && warningCount === 0
   return (
     <aside className="flex flex-col gap-4 border-b border-line bg-sidebar p-3 lg:border-r lg:border-b-0">
-      <p className="px-2 text-base font-semibold">policy-editor</p>
+      <h1 className="px-2 text-base font-semibold">policy-editor</h1>
       <nav aria-label="Bereiche">
         <ul className="flex flex-wrap gap-1 lg:flex-col">
           {items.map((item) => (
@@ -69,7 +69,7 @@ export function Sidebar({
           onClick={onOpenChanges}
           type="button"
         >
-          {changedCount} {changedCount === 1 ? 'Recht geändert' : 'Rechte geändert'}
+          Änderungen ({changedCount})
         </button>
         <button
           className={`${BUTTON} px-2 py-1 text-left ${
