@@ -11,8 +11,8 @@ import {loadSucceeds} from './ui/loadSucceeds.ts'
 import {parseFindingPath} from './ui/pathTarget.ts'
 import type {Selection, TabId} from './ui/Selection.ts'
 import {ProvidersTab} from './ui/ProvidersTab.tsx'
+import {RightsTab} from './ui/RightsTab.tsx'
 import {TabBar} from './ui/TabBar.tsx'
-import {TabPlaceholder} from './ui/TabPlaceholder.tsx'
 import {ValidationPanel} from './ui/ValidationPanel.tsx'
 
 const CONFIRM_TEXT = 'Die Datei enthält Fehler, die den Start des policy-service verhindern. Trotzdem herunterladen?'
@@ -99,7 +99,7 @@ export function App(): React.JSX.Element {
         <main aria-labelledby={`tab-${tab}`} className="min-w-0 p-4" id={`panel-${tab}`} role="tabpanel" tabIndex={0}>
           {tab === 'channels' && <ChannelsTab dispatch={dispatch} policy={policy} selected={selectedIndex} />}
           {tab === 'providers' && <ProvidersTab dispatch={dispatch} policy={policy} selected={selectedIndex} />}
-          {tab === 'rights' && <TabPlaceholder selectedIndex={selectedIndex} tab={tab} />}
+          {tab === 'rights' && <RightsTab dispatch={dispatch} policy={policy} selected={selectedIndex} />}
         </main>
         <ValidationPanel findings={findings} onSelect={select} showUnknownFieldHint={showUnknownFieldHint} />
       </div>
