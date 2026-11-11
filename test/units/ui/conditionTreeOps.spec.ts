@@ -1,11 +1,14 @@
 import {expect} from 'chai'
+import {OperationError} from '../../../src/model/OperationError.ts'
 import type {CompositeNode} from '../../../src/model/PolicyTypes.ts'
 import {
+  dissolveGroupAt,
   insertChildAt,
   moveChildWithin,
   removeNodeAt,
   setOperatorAt,
   updateNodeAt,
+  wrapInGroupAt,
 } from '../../../src/ui/conditionTreeOps.ts'
 
 const deep: CompositeNode = {
@@ -108,6 +111,38 @@ describe('conditionTreeOps', () => {
     it('Fehlschlag: Ziel ist ein Blatt oder außerhalb', () => {
       expect(() => setOperatorAt({operator: 'OR', path: [0], root: deep})).to.throw()
       expect(() => setOperatorAt({operator: 'OR', path: [3], root: deep})).to.throw()
+    })
+  })
+  describe('dissolveGroupAt / wrapInGroupAt', () => {
+    const root: CompositeNode = {conditions: [{conditions: ['A'], operator: 'AND'}, 'B'], operator: 'AND'}
+
+    it('Erfolg: dissolveGroupAt hebt die Kinder in die Elterngruppe', () => {
+      const copy = structuredClone(root)
+      expect(dissolveGroupAt({path: [0], root})).to.deep.equal({conditions: ['A', 'B'], operator: 'AND'})
+      expect(root).to.deep.equal(copy)
+    })
+
+    it('Erfolg: wrapInGroupAt umschließt den Knoten mit einer AND-Gruppe', () => {
+      const copy = structuredClone(root)
+      expect(wrapInGroupAt({path: [1], root})).to.deep.equal({
+        conditions: [
+          {conditions: ['A'], operator: 'AND'},
+          {conditions: ['B'], operator: 'AND'},
+        ],
+        operator: 'AND',
+      })
+      expect(root).to.deep.equal(copy)
+    })
+
+    it('Fehlschlag: dissolveGroupAt auf Wurzel und Blatt wirft OperationError', () => {
+      expect(() => dissolveGroupAt({path: [], root})).to.throw(OperationError)
+      expect(() => dissolveGroupAt({path: [1], root})).to.throw(OperationError)
+    })
+
+    it('Fehlschlag: ungültiger Pfad wirft OperationError', () => {
+      expect(() => wrapInGroupAt({path: [], root})).to.throw(OperationError)
+      expect(() => wrapInGroupAt({path: [5], root})).to.throw(OperationError)
+      expect(() => dissolveGroupAt({path: [5], root})).to.throw(OperationError)
     })
   })
 })

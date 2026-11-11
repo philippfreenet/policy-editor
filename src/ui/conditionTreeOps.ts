@@ -92,3 +92,32 @@ export function setOperatorAt(args: {operator: string; path: NodePath; root: Com
   groupAt({path: args.path, root}).operator = args.operator
   return root
 }
+
+/** Löst die Gruppe unter dem Pfad auf: ihre Kinder rücken an ihre Stelle in der Elterngruppe. */
+export function dissolveGroupAt(args: {path: NodePath; root: CompositeNode}): CompositeNode {
+  const root = structuredClone(args.root)
+  const {index, parent} = splitPath({path: args.path})
+  const group = groupAt({path: parent, root})
+  const target = group.conditions[index]
+  if (target === undefined) {
+    throw new OperationError('Pfad im Bedingungsbaum ist ungültig')
+  }
+  if (typeof target === 'string') {
+    throw new OperationError('Der Knoten ist keine Gruppe')
+  }
+  group.conditions.splice(index, 1, ...target.conditions)
+  return root
+}
+
+/** Umschließt den Knoten unter dem Pfad mit einer neuen AND-Gruppe. */
+export function wrapInGroupAt(args: {path: NodePath; root: CompositeNode}): CompositeNode {
+  const root = structuredClone(args.root)
+  const {index, parent} = splitPath({path: args.path})
+  const group = groupAt({path: parent, root})
+  const target = group.conditions[index]
+  if (target === undefined) {
+    throw new OperationError('Pfad im Bedingungsbaum ist ungültig')
+  }
+  group.conditions[index] = {conditions: [target], operator: 'AND'}
+  return root
+}
