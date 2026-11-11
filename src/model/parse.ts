@@ -54,7 +54,7 @@ class Reader {
   public string(args: {obj: Json; key: string; path: string}): string {
     const value = args.obj[args.key]
     if (typeof value === 'string') return value
-    this.wrongType({expected: 'Text', path: join(args.path, args.key)})
+    if (value !== undefined) this.wrongType({expected: 'Text', path: join(args.path, args.key)})
     return ''
   }
 
@@ -85,7 +85,7 @@ class Reader {
     const path = join(args.path, args.key)
     const value = args.obj[args.key]
     if (!Array.isArray(value)) {
-      this.wrongType({expected: 'Liste', path})
+      if (value !== undefined) this.wrongType({expected: 'Liste', path})
       return []
     }
     const result: T[] = []

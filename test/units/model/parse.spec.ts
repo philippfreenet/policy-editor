@@ -138,4 +138,21 @@ describe('parsePolicy', () => {
     expect(PROVIDER_CLASSES).to.have.length(19)
     expect(emptyPolicy()).to.deep.equal({channels: [], providers: [], rights: []})
   })
+
+  it('Erfolg: fehlender Provider-Name erzeugt keinen Parser-Befund', () => {
+    const result = parseOk('{"channels":[],"providers":[{"className":"X"}],"rights":[]}')
+    expect(result.policy.providers[0]?.name).to.equal('')
+    expect(result.findings).to.deep.equal([])
+  })
+
+  it('Erfolg: fehlende providers-Liste erzeugt keinen Parser-Befund', () => {
+    const result = parseOk('{"channels":[],"rights":[]}')
+    expect(result.policy.providers).to.deep.equal([])
+    expect(result.findings).to.deep.equal([])
+  })
+
+  it('Fehlschlag: null bleibt ein falscher Typ', () => {
+    const result = parseOk('{"channels":null,"providers":[{"className":"X","name":null}],"rights":[]}')
+    expect(result.findings.map((f) => f.path)).to.have.members(['channels', 'providers[0].name'])
+  })
 })
