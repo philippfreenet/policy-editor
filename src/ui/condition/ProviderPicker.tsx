@@ -45,8 +45,10 @@ export function ProviderPicker({label, onPick, providers}: ProviderPickerProps):
           }}
           placeholder={`${label} …`}
         />
+        {filtered.length === 0 && query.trim().length > 0 && (
+          <p className="px-2 py-1 text-muted">Kein Provider gefunden</p>
+        )}
         <ComboboxOptions className="absolute z-30 mt-1 max-h-64 w-full min-w-64 overflow-auto rounded border border-line-strong bg-surface py-1 outline-none empty:hidden">
-          {filtered.length === 0 && <div className="px-3 py-1 text-muted">Kein Provider gefunden</div>}
           {filtered.map((provider, index) => (
             <ComboboxOption
               className="block cursor-pointer px-3 py-1 data-focus:bg-sidebar data-focus:outline-2 data-focus:-outline-offset-2 data-focus:outline-accent"

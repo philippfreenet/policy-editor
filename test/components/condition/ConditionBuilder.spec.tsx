@@ -168,11 +168,34 @@ describe('ConditionBuilder', () => {
       {message: 'Irgendwo', path: 'rights[0].condition.conditions[9]', severity: 'warning'},
     ])
     const row = screen.getByRole('group', {name: 'Bedingung Vertrag_aktiv'})
-    expect(within(row).getByText('Provider fehlt')).to.exist
+    expect(within(row).getByText(/Provider fehlt/)).to.exist
     const inner = screen.getByRole('group', {name: 'Gruppe 1.2'})
-    expect(within(inner).getByText('Operator falsch')).to.exist
+    expect(within(inner).getByText(/Operator falsch/)).to.exist
     const root = screen.getByRole('group', {name: 'Gruppe 1'})
-    expect(within(root).getByText('Irgendwo')).to.exist
-    expect(row.getAttribute('aria-describedby')).to.be.a('string')
+    expect(within(root).getByText(/Irgendwo/)).to.exist
+    const describedBy = row.getAttribute('aria-describedby') ?? ''
+    expect(document.getElementById(describedBy)?.textContent).to.contain('Provider fehlt')
+  })
+
+  it('Fehlschlag: Befund außerhalb der Bedingung wird nicht angezeigt', () => {
+    setup({conditions: ['Vertrag_aktiv'], operator: 'AND'}, [
+      {message: 'Name doppelt', path: 'rights[0].name', severity: 'error'},
+    ])
+    expect(screen.queryByText(/Name doppelt/)).to.equal(null)
+  })
+
+  it('Erfolg: Warnungen sind als „Warnung:“ gekennzeichnet', () => {
+    setup({conditions: ['Vertrag_aktiv'], operator: 'AND'}, [
+      {message: 'Hinweis', path: 'rights[0].condition', severity: 'warning'},
+    ])
+    expect(screen.getByText(/Warnung:/).textContent).to.contain('Hinweis')
+  })
+
+  it('Erfolg: „Entfernen“ im Gruppen-Menü entfernt die Gruppe', async () => {
+    const user = userEvent.setup()
+    const s = setup({conditions: [{conditions: ['Vertrag_aktiv'], operator: 'AND'}, 'Prepaidvertrag'], operator: 'AND'})
+    await user.click(screen.getByRole('button', {name: 'Aktionen für Gruppe 1.1'}))
+    await user.click(screen.getByRole('menuitem', {name: 'Entfernen'}))
+    expect(s.last()?.conditions).to.deep.equal(['Prepaidvertrag'])
   })
 })

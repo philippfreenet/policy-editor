@@ -12,9 +12,10 @@ export function FindingList({findings, id}: FindingListProps): React.JSX.Element
     return null
   }
   return (
-    <ul className="list-none text-danger" id={id}>
+    <ul className="list-none" id={id}>
       {findings.map((finding, index) => (
-        <li className="break-words" key={index}>
+        <li className={`break-words ${finding.severity === 'warning' ? 'text-warn' : 'text-danger'}`} key={index}>
+          {finding.severity === 'warning' ? 'Warnung: ' : 'Fehler: '}
           {finding.message}
         </li>
       ))}

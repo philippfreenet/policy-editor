@@ -35,7 +35,8 @@ function nodePathOf(args: {findingPath: string; prefix: string}): NodePath | und
 
 /**
  * Ordnet Befunde den Knoten des Bedingungsbaums zu. Befunde, die über einen Knoten hinaus weiterlaufen
- * (z. B. „….operator“), gehören zu diesem Knoten; nicht zuordenbare Befunde hängen an der Wurzel.
+ * (z. B. „….operator“), gehören zu diesem Knoten; Befunde zu nicht existierenden Knoten hängen an der Wurzel.
+ * Befunde außerhalb des Präfixes (andere Felder des Rechts) werden ignoriert.
  */
 export function groupFindingsByNode(args: {
   findings: readonly Finding[]
@@ -45,7 +46,10 @@ export function groupFindingsByNode(args: {
   const result = new Map<string, Finding[]>()
   for (const finding of args.findings) {
     const mapped = nodePathOf({findingPath: finding.path, prefix: args.prefix})
-    const path = mapped !== undefined && exists({path: mapped, root: args.root}) ? mapped : []
+    if (mapped === undefined) {
+      continue
+    }
+    const path = exists({path: mapped, root: args.root}) ? mapped : []
     const key = pathKey({path})
     result.set(key, [...(result.get(key) ?? []), finding])
   }

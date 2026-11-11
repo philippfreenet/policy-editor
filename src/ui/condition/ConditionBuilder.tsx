@@ -34,7 +34,7 @@ export function ConditionBuilder({
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-muted">Gilt immer</span>
         <button
-          className="min-h-6 rounded border border-line-strong bg-surface px-3 py-1 outline-accent hover:bg-sidebar focus-visible:outline-2"
+          className="min-h-6 rounded border border-line-strong bg-surface px-3 py-1 outline-accent hover:bg-accent-soft focus-visible:outline-2"
           onClick={() => {
             onChange({conditions: [], operator: 'AND'})
           }}

@@ -32,7 +32,8 @@ interface ConditionGroupBlockProps {
   path: NodePath
 }
 
-const SEGMENT_BASE = 'min-h-6 px-3 py-1 outline-accent focus-visible:z-10 focus-visible:outline-2'
+const SEGMENT_BASE =
+  'min-h-6 px-3 py-1 outline-accent focus-visible:z-10 focus-visible:-outline-offset-2 focus-visible:outline-2'
 
 /** Getönter Block für eine Bedingungsgruppe mit Operator-Umschalter, Kindern und Hinzufügen-Steuerung. */
 export function ConditionGroupBlock({context, group, path}: ConditionGroupBlockProps): React.JSX.Element {
@@ -160,7 +161,7 @@ export function ConditionGroupBlock({context, group, path}: ConditionGroupBlockP
           />
         </div>
         <button
-          className="min-h-6 rounded border border-line-strong bg-surface px-3 py-1 outline-accent hover:bg-sidebar focus-visible:outline-2"
+          className="min-h-6 rounded border border-line-strong bg-surface px-3 py-1 outline-accent hover:bg-accent-soft focus-visible:outline-2"
           onClick={() => {
             onChange(insertChildAt({child: {conditions: [], operator: 'AND'}, path, root}))
           }}
