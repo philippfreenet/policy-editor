@@ -24,14 +24,14 @@ export function ProviderForm({dispatch, index, onDeleted, policy, provider}: Pro
   const names = usageNames({indices: usages, policy})
 
   /** Schreibt den geänderten Provider zurück. */
-  function save(next: ProviderDef): void {
-    dispatch({apply: (p) => upsertProvider({index, policy: p, provider: next}), type: 'edit'})
+  function save(next: ProviderDef, coalesce?: string): void {
+    dispatch({apply: (p) => upsertProvider({index, policy: p, provider: next}), coalesce, type: 'edit'})
   }
 
   /** Ändert die Beschreibung; leer bedeutet: Schlüssel weglassen. */
   function setDescription(text: string): void {
     const {description: _old, ...rest} = provider
-    save(text.length === 0 ? rest : {...rest, description: text})
+    save(text.length === 0 ? rest : {...rest, description: text}, `provider-${index}-description`)
   }
 
   /** Ersetzt die Parameter; undefined lässt den Schlüssel weg. */

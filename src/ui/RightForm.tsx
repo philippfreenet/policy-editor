@@ -1,4 +1,5 @@
 import {USER_ROLES} from '../constants.ts'
+import {formatCondition} from '../model/formatCondition.ts'
 import {deleteRight, moveRight, upsertRight} from '../model/operations.ts'
 import type {PolicyFile, RightDef} from '../model/PolicyTypes.ts'
 import type {EditorAction} from '../state/editorReducer.ts'
@@ -24,8 +25,8 @@ export function RightForm({dispatch, index, onDeleted, onMoved, policy, right}: 
   const extraChannels = [...new Set(right.channels.filter((c) => !policy.channels.includes(c)))]
 
   /** Schreibt das geänderte Recht zurück. */
-  function save(next: RightDef): void {
-    dispatch({apply: (p) => upsertRight({index, policy: p, right: next}), type: 'edit'})
+  function save(next: RightDef, coalesce?: string): void {
+    dispatch({apply: (p) => upsertRight({index, policy: p, right: next}), coalesce, type: 'edit'})
   }
 
   /** Schaltet einen Eintrag einer Liste um; neue Einträge werden hinten angefügt. */
@@ -95,7 +96,7 @@ export function RightForm({dispatch, index, onDeleted, onMoved, policy, right}: 
         <input
           className={INPUT}
           id={`${prefix}-description`}
-          onChange={(event) => save({...right, description: event.target.value})}
+          onChange={(event) => save({...right, description: event.target.value}, `right-${index}-description`)}
           type="text"
           value={right.description}
         />
@@ -156,6 +157,16 @@ export function RightForm({dispatch, index, onDeleted, onMoved, policy, right}: 
           />
           Statisch (ohne Bedingung)
         </label>
+        {right.condition !== undefined && (
+          <p className="rounded-md border border-slate-300 bg-slate-50 px-3 py-2 font-mono text-sm break-words text-slate-900">
+            <span className="sr-only">Formel: </span>
+            {right.condition.conditions.length === 0 ? (
+              <span className="font-sans text-slate-700">Leere Bedingung – Provider oder Gruppe hinzufügen.</span>
+            ) : (
+              formatCondition({node: right.condition})
+            )}
+          </p>
+        )}
         {right.condition !== undefined && (
           <ConditionTree
             onChange={(condition) => save({...right, condition})}

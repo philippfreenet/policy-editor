@@ -1,9 +1,13 @@
 import {useEffect, useState} from 'react'
+import {USER_ROLES} from '../constants.ts'
+import {formatCondition} from '../model/formatCondition.ts'
 import {upsertRight} from '../model/operations.ts'
+import {matchesFilter} from '../model/rightQueries.ts'
+import type {RightFilter} from '../model/rightQueries.ts'
 import type {PolicyFile} from '../model/PolicyTypes.ts'
 import type {EditorAction} from '../state/editorReducer.ts'
 import {RightForm} from './RightForm.tsx'
-import {BUTTON_PRIMARY, INPUT} from './styles.ts'
+import {BUTTON, BUTTON_PRIMARY, INPUT} from './styles.ts'
 import {uniqueName} from './uniqueName.ts'
 
 interface RightsTabProps {
@@ -12,16 +16,50 @@ interface RightsTabProps {
   selected: number | null
 }
 
+const NO_FILTER: RightFilter = {channel: null, provider: null, query: '', role: null}
+
+interface FilterSelectProps {
+  id: string
+  label: string
+  onChange: (value: string | null) => void
+  options: readonly string[]
+  value: string | null
+}
+
+/** Auswahlfeld eines Filters; „alle“ steht für keinen Filter. */
+function FilterSelect({id, label, onChange, options, value}: FilterSelectProps): React.JSX.Element {
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="text-sm font-medium text-slate-900" htmlFor={id}>
+        {label}
+      </label>
+      <select
+        className={`${INPUT} max-w-48`}
+        id={id}
+        onChange={(event) => onChange(event.target.value === '' ? null : event.target.value)}
+        value={value ?? ''}
+      >
+        <option value="">alle</option>
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    </div>
+  )
+}
+
 /** Rechte-Tab: durchsuchbare Liste mit öffentlicher ID; die Auswahl öffnet das Formular. */
 export function RightsTab({dispatch, policy, selected}: RightsTabProps): React.JSX.Element {
   const [open, setOpen] = useState<number | null>(selected)
-  const [query, setQuery] = useState('')
+  const [filter, setFilter] = useState<RightFilter>(NO_FILTER)
   const [lastSelected, setLastSelected] = useState(selected)
   if (lastSelected !== selected) {
     setLastSelected(selected)
     if (selected !== null) {
       setOpen(selected)
-      setQuery('')
+      setFilter(NO_FILTER)
     }
   }
 
@@ -35,12 +73,12 @@ export function RightsTab({dispatch, policy, selected}: RightsTabProps): React.J
     }
   }, [open])
 
-  const needle = query.trim().toLowerCase()
   const visible = policy.rights
     .map((right, index) => ({index, right}))
-    .filter(
-      ({right}) => needle.length === 0 || [right.name, right.description].some((t) => t.toLowerCase().includes(needle)),
-    )
+    .filter(({right}) => matchesFilter({filter, right}))
+  const filtered =
+    filter.query.trim().length > 0 || filter.role !== null || filter.channel !== null || filter.provider !== null
+  const providerNames = [...new Set(policy.providers.map((p) => p.name))].sort((a, b) => a.localeCompare(b))
   const openRight = open === null ? undefined : policy.rights[open]
 
   /** Hängt ein neues, statisches Recht an und öffnet es. */
@@ -55,7 +93,7 @@ export function RightsTab({dispatch, policy, selected}: RightsTabProps): React.J
         }),
       type: 'edit',
     })
-    setQuery('')
+    setFilter(NO_FILTER)
     setOpen(policy.rights.length)
   }
 
@@ -72,12 +110,36 @@ export function RightsTab({dispatch, policy, selected}: RightsTabProps): React.J
           <input
             className={INPUT}
             id="right-search"
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => setFilter({...filter, query: event.target.value})}
             placeholder="Name, Beschreibung"
             type="search"
-            value={query}
+            value={filter.query}
           />
         </div>
+        <FilterSelect
+          id="right-filter-role"
+          label="Rolle"
+          onChange={(role) => setFilter({...filter, role})}
+          options={USER_ROLES}
+          value={filter.role}
+        />
+        <FilterSelect
+          id="right-filter-channel"
+          label="Channel"
+          onChange={(channel) => setFilter({...filter, channel})}
+          options={policy.channels}
+          value={filter.channel}
+        />
+        <FilterSelect
+          id="right-filter-provider"
+          label="Provider"
+          onChange={(provider) => setFilter({...filter, provider})}
+          options={providerNames}
+          value={filter.provider}
+        />
+        <button className={BUTTON} disabled={!filtered} onClick={() => setFilter(NO_FILTER)} type="button">
+          Filter zurücksetzen
+        </button>
         <button className={BUTTON_PRIMARY} onClick={create} type="button">
           Neues Recht
         </button>
@@ -103,6 +165,9 @@ export function RightsTab({dispatch, policy, selected}: RightsTabProps): React.J
                 >
                   <span className="break-words font-mono text-sm font-medium text-slate-900">
                     #{index + 1} {right.name}
+                  </span>
+                  <span className="truncate font-mono text-xs text-slate-700">
+                    {right.condition === undefined ? 'statisch' : formatCondition({node: right.condition})}
                   </span>
                 </button>
               </li>

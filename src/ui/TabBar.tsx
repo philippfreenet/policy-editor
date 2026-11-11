@@ -9,6 +9,7 @@ const TABS: readonly {id: TabId; label: string}[] = [
   {id: 'channels', label: 'Channels'},
   {id: 'providers', label: 'Provider'},
   {id: 'rights', label: 'Rechte'},
+  {id: 'matrix', label: 'Übersicht'},
 ]
 
 /** Tab-Leiste (WAI-ARIA-Tabs): Pfeiltasten wechseln, Home/Ende springen an Anfang/Ende. */

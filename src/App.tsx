@@ -1,4 +1,4 @@
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 import {serializePolicy} from './model/serialize.ts'
 import {useEditor} from './state/useEditor.ts'
 import {DiffDialog} from './ui/DiffDialog.tsx'
@@ -7,6 +7,8 @@ import {ChannelsTab} from './ui/ChannelsTab.tsx'
 import {ErrorBox} from './ui/ErrorBox.tsx'
 import {Header} from './ui/Header.tsx'
 import {LoadScreen} from './ui/LoadScreen.tsx'
+import {MatrixTab} from './ui/MatrixTab.tsx'
+import {undoShortcut} from './ui/undoShortcut.ts'
 import {loadSucceeds} from './ui/loadSucceeds.ts'
 import {parseFindingPath} from './ui/pathTarget.ts'
 import type {Selection, TabId} from './ui/Selection.ts'
@@ -27,6 +29,23 @@ export function App(): React.JSX.Element {
   const [selected, setSelected] = useState<Selection | null>(null)
 
   const clearError = (): void => dispatch({type: 'clearError'})
+  const editing = state.policy !== null && !reloading
+
+  /* Tastenkürzel für Rückgängig/Wiederholen; Textfelder behalten ihr eigenes Undo */
+  useEffect(() => {
+    if (!editing) {
+      return undefined
+    }
+    const onKeyDown = (event: KeyboardEvent): void => {
+      const action = undoShortcut({event})
+      if (action !== null) {
+        event.preventDefault()
+        dispatch({type: action})
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [dispatch, editing])
 
   /** Fragt nach, wenn die aktuelle Policy von der geladenen Datei abweicht; true bedeutet: fortfahren. */
   function confirmDiscard(): boolean {
@@ -91,11 +110,15 @@ export function App(): React.JSX.Element {
   return (
     <div className="flex min-h-screen flex-col">
       <Header
+        canRedo={state.future.length > 0}
+        canUndo={state.past.length > 0}
         errorCount={errorCount}
         fileLabel={state.original === null ? 'Neue Konfiguration' : 'policy.json'}
         onDiff={() => setShowDiff(true)}
         onDownload={download}
+        onRedo={() => dispatch({type: 'redo'})}
         onReload={() => setReloading(true)}
+        onUndo={() => dispatch({type: 'undo'})}
         warningCount={warningCount}
       />
       {state.error !== null && (
@@ -115,6 +138,15 @@ export function App(): React.JSX.Element {
           {tab === 'channels' && <ChannelsTab dispatch={dispatch} policy={policy} selected={selectedIndex} />}
           {tab === 'providers' && <ProvidersTab dispatch={dispatch} policy={policy} selected={selectedIndex} />}
           {tab === 'rights' && <RightsTab dispatch={dispatch} policy={policy} selected={selectedIndex} />}
+          {tab === 'matrix' && (
+            <MatrixTab
+              onOpenRight={(index) => {
+                setTab('rights')
+                setSelected({index, tab: 'rights'})
+              }}
+              policy={policy}
+            />
+          )}
         </main>
         <ValidationPanel
           findings={findings}

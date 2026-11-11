@@ -28,6 +28,10 @@ Für den statischen Produktions-Build: `npm run build`, danach `npm run preview`
 
 - Tabs für Channels, Provider und Rechte; Umbenennen und Löschen berücksichtigt Verwendungen, damit keine verwaisten Referenzen entstehen
 - Baumeditor für rekursive Bedingungen (`AND` / `OR`, Provider-Namen und verschachtelte Gruppen)
+- Bedingungen zusätzlich als lesbare Formel, z. B. `Vertrag_aktiv AND (A OR B)`, im Formular und in der Rechteliste
+- Rechteliste filterbar nach Text, Rolle, Channel und Provider (in beliebiger Tiefe der Bedingung)
+- Tab „Übersicht“: Matrix Rolle × Channel mit der Anzahl der Rechte je Zelle; eine Zelle listet ihre Rechte mit Bedingung und öffnet sie per Klick
+- Rückgängig/Wiederholen (bis 100 Schritte) über Kopfzeile oder `Strg/⌘+Z`, `Strg/⌘+⇧+Z`, `Strg+Y`; Tippen in einem Beschreibungsfeld zählt als ein Schritt, in Textfeldern bleibt das Rückgängig des Browsers aktiv
 - Validierung nach den Regeln des Starts von `DatabaseService` im `policy-service`; Befunde tragen einen Pfad, über den die UI zur Stelle springt
 - Diff gegen die geladene Datei
 - Das Schreiben folgt der festen Feldreihenfolge der `policy.json`, damit Änderungen minimale Diffs erzeugen

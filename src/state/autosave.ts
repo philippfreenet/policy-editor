@@ -35,8 +35,11 @@ export function loadAutosave(args: {storage: AutosaveStorage}): EditorState | nu
     return {
       error: null,
       findings: validatePolicy({policy: result.policy}),
+      future: [],
+      lastCoalesce: null,
       original,
       parseFindings: [],
+      past: [],
       policy: result.policy,
     }
   } catch {
