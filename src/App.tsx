@@ -11,7 +11,7 @@ import type {View} from './ui/logic/viewTarget.ts'
 import {loadSucceeds} from './ui/loadSucceeds.ts'
 import {MatrixTab} from './ui/MatrixTab.tsx'
 import {ProvidersTab} from './ui/ProvidersTab.tsx'
-import {RightsTab} from './ui/RightsTab.tsx'
+import {RightsView} from './ui/rights/RightsView.tsx'
 import {AppShell} from './ui/shell/AppShell.tsx'
 import {DiffDialog} from './ui/shell/DiffDialog.tsx'
 import {FindingsDrawer} from './ui/shell/FindingsDrawer.tsx'
@@ -128,6 +128,7 @@ export function App(): React.JSX.Element {
   const errorCount = findings.filter((f) => f.severity === 'error').length
   const warningCount = findings.length - errorCount
   const selectedIndex = selection?.index ?? null
+  const changed = changedRights({original: state.original, policy})
   const showUnknownFieldHint = state.parseFindings.some((f) => f.message.startsWith('Unbekanntes Feld'))
 
   /** Lädt die aktuelle Policy herunter und zeigt die Bestätigungsmeldung. */
@@ -172,7 +173,7 @@ export function App(): React.JSX.Element {
         onClearError={clearError}
         sidebar={
           <Sidebar
-            changedCount={changedRights({original: state.original, policy}).size}
+            changedCount={changed.size}
             counts={{
               channels: policy.channels.length,
               providers: policy.providers.length,
@@ -203,7 +204,9 @@ export function App(): React.JSX.Element {
       >
         {view === 'channels' && <ChannelsTab dispatch={dispatch} policy={policy} selected={selectedIndex} />}
         {view === 'providers' && <ProvidersTab dispatch={dispatch} policy={policy} selected={selectedIndex} />}
-        {view === 'rights' && <RightsTab dispatch={dispatch} policy={policy} selected={selectedIndex} />}
+        {view === 'rights' && (
+          <RightsView changed={changed} dispatch={dispatch} findings={findings} policy={policy} selection={selection} />
+        )}
         {view === 'overview' && (
           <MatrixTab
             onOpenRight={(index) => {
