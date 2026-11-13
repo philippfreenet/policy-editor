@@ -6,6 +6,8 @@ import type {Finding, PolicyFile} from '../../model/PolicyTypes.ts'
 import type {EditorAction} from '../../state/editorReducer.ts'
 import {parseSearch} from '../logic/parseSearch.ts'
 import {uniqueName} from '../uniqueName.ts'
+import {useEntrySelection} from '../useEntrySelection.ts'
+import type {EntryJump, EntryStore} from '../useEntrySelection.ts'
 import {RightInspector} from './RightInspector.tsx'
 import {RightList} from './RightList.tsx'
 import type {FilterKey} from './RightList.tsx'
@@ -16,7 +18,9 @@ interface RightsViewProps {
   dispatch: (action: EditorAction) => void
   findings: readonly Finding[]
   policy: PolicyFile
-  selection: {field: string | null; index: number | null} | null
+  selection: EntryJump | null
+  /** Ablage, in der Auswahl, Suche und Filter den Wechsel der Ansicht überstehen. */
+  store?: EntryStore
 }
 
 type MenuFilter = Record<FilterKey, string | null>
@@ -25,26 +29,32 @@ const NO_MENU: MenuFilter = {channel: null, provider: null, role: null}
 const SEARCH_KEY: Record<FilterKey, string> = {channel: 'channel', provider: 'provider', role: 'rolle'}
 
 /** Rechte-Ansicht: Liste mit Suche und Filtern links, Inspektor des gewählten Rechts rechts. */
-export function RightsView({changed, dispatch, findings, policy, selection}: RightsViewProps): React.JSX.Element {
-  const [open, setOpen] = useState<number | null>(selection?.index ?? null)
-  /* Auswahl wird per Objektidentität verglichen: App erzeugt je Sprung ein neues Objekt, auch für dasselbe Recht */
-  const [lastSelection, setLastSelection] = useState(selection)
-  const [jumpField, setJumpField] = useState<string | null>(selection?.field ?? null)
+export function RightsView({
+  changed,
+  dispatch,
+  findings,
+  policy,
+  selection,
+  store,
+}: RightsViewProps): React.JSX.Element {
+  const {
+    clearJump,
+    filters: menu,
+    jumpField,
+    open,
+    select,
+    setFilters: setMenu,
+    setText,
+    text,
+  } = useEntrySelection<MenuFilter>({
+    emptyFilters: NO_MENU,
+    items: policy.rights,
+    jump: selection,
+    store,
+    storeKey: 'rights',
+  })
   const [focusList, setFocusList] = useState(false)
-  const [text, setText] = useState('')
-  const [menu, setMenu] = useState<MenuFilter>(NO_MENU)
   const [editNameFor, setEditNameFor] = useState<number | null>(null)
-
-  /* Eine von außen (z. B. Befund, Übersicht) gesetzte Auswahl öffnet das Recht und zeigt es ungefiltert */
-  if (selection !== lastSelection) {
-    setLastSelection(selection)
-    if (selection?.index !== null && selection?.index !== undefined) {
-      setOpen(selection.index)
-      setJumpField(selection.field)
-      setText('')
-      setMenu(NO_MENU)
-    }
-  }
 
   const parsed = parseSearch({text})
   const filter: RightFilter = {
@@ -58,8 +68,6 @@ export function RightsView({changed, dispatch, findings, policy, selection}: Rig
 
   /** Verbraucht den Namensfeld-Start. */
   const clearAutoEdit = useCallback((): void => setEditNameFor(null), [])
-  /** Verbraucht den Feldsprung. */
-  const clearJump = useCallback((): void => setJumpField(null), [])
 
   /* Nach dem Löschen landet der Fokus in der Liste statt im Nichts */
   useEffect(() => {
@@ -82,8 +90,8 @@ export function RightsView({changed, dispatch, findings, policy, selection}: Rig
       type: 'edit',
     })
     setText('')
-    setMenu(NO_MENU)
-    setOpen(policy.rights.length)
+    setMenu(() => NO_MENU)
+    select(policy.rights.length)
     setEditNameFor(policy.rights.length)
   }
 
@@ -110,10 +118,10 @@ export function RightsView({changed, dispatch, findings, policy, selection}: Rig
         onFilterRemove={removeFilter}
         onResetFilter={() => {
           setText('')
-          setMenu(NO_MENU)
+          setMenu(() => NO_MENU)
         }}
         onSearchChange={setText}
-        onSelect={setOpen}
+        onSelect={select}
         policy={policy}
         searchText={text}
         selected={openRight === undefined ? null : open}
@@ -132,11 +140,11 @@ export function RightsView({changed, dispatch, findings, policy, selection}: Rig
             onAutoEditDone={clearAutoEdit}
             jumpField={jumpField}
             onDeleted={() => {
-              setOpen(null)
+              select(null)
               setFocusList(true)
             }}
             onJumpDone={clearJump}
-            onMoved={setOpen}
+            onMoved={select}
             policy={policy}
             right={openRight}
           />

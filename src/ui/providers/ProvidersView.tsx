@@ -1,10 +1,12 @@
-import {useCallback, useEffect, useState} from 'react'
+import {useEffect, useState} from 'react'
 import {findProviderUsages, upsertProvider} from '../../model/operations.ts'
 import type {Finding, PolicyFile} from '../../model/PolicyTypes.ts'
 import {PROVIDER_CLASSES} from '../../constants.ts'
 import type {EditorAction} from '../../state/editorReducer.ts'
 import {findingsAt} from '../logic/findingsAt.ts'
 import {uniqueName} from '../uniqueName.ts'
+import {useEntrySelection} from '../useEntrySelection.ts'
+import type {EntryJump, EntryStore} from '../useEntrySelection.ts'
 import {ProviderInspector} from './ProviderInspector.tsx'
 
 const BUTTON =
@@ -15,8 +17,12 @@ interface ProvidersViewProps {
   findings: readonly Finding[]
   onOpenRight: (index: number) => void
   policy: PolicyFile
-  selection: {field: string | null; index: number | null} | null
+  selection: EntryJump | null
+  /** Ablage, in der Auswahl und Suche den Wechsel der Ansicht überstehen. */
+  store?: EntryStore
 }
+
+const NO_FILTERS = {}
 
 /** Provider-Ansicht: durchsuchbare Liste links, Inspektor des gewählten Providers rechts. */
 export function ProvidersView({
@@ -25,25 +31,23 @@ export function ProvidersView({
   onOpenRight,
   policy,
   selection,
+  store,
 }: ProvidersViewProps): React.JSX.Element {
-  const [open, setOpen] = useState<number | null>(selection?.index ?? null)
-  /* Auswahl wird per Objektidentität verglichen: App erzeugt je Sprung ein neues Objekt, auch für denselben Eintrag */
-  const [lastSelection, setLastSelection] = useState(selection)
-  const [jumpField, setJumpField] = useState<string | null>(selection?.field ?? null)
+  const {
+    clearJump,
+    jumpField,
+    open,
+    select,
+    setText: setQuery,
+    text: query,
+  } = useEntrySelection({
+    emptyFilters: NO_FILTERS,
+    items: policy.providers,
+    jump: selection,
+    store,
+    storeKey: 'providers',
+  })
   const [focusList, setFocusList] = useState(false)
-  const [query, setQuery] = useState('')
-
-  if (selection !== lastSelection) {
-    setLastSelection(selection)
-    if (selection?.index !== null && selection?.index !== undefined) {
-      setOpen(selection.index)
-      setJumpField(selection.field)
-      setQuery('')
-    }
-  }
-
-  /** Verbraucht den Feldsprung. */
-  const clearJump = useCallback((): void => setJumpField(null), [])
 
   /* Nach dem Löschen landet der Fokus in der Liste statt im Nichts */
   useEffect(() => {
@@ -82,7 +86,7 @@ export function ProvidersView({
       type: 'edit',
     })
     setQuery('')
-    setOpen(total)
+    select(total)
   }
 
   return (
@@ -140,7 +144,7 @@ export function ProvidersView({
                 <button
                   aria-current={isSelected ? 'true' : undefined}
                   className={`flex w-full min-w-0 flex-col gap-0.5 px-3 py-1.5 text-left outline-accent hover:bg-sidebar focus-visible:outline-2 focus-visible:-outline-offset-2 ${isSelected ? 'bg-accent-soft shadow-[inset_3px_0_0_0_var(--color-accent)]' : ''}`}
-                  onClick={() => setOpen(index)}
+                  onClick={() => select(index)}
                   type="button"
                 >
                   <span className="flex min-w-0 items-start gap-1">
@@ -174,7 +178,7 @@ export function ProvidersView({
             jumpField={jumpField}
             key={open}
             onDeleted={() => {
-              setOpen(null)
+              select(null)
               setFocusList(true)
             }}
             onJumpDone={clearJump}

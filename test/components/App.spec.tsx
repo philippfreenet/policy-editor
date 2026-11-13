@@ -91,6 +91,44 @@ describe('App', () => {
     await userEvent.click(screen.getByRole('button', {name: 'Laden'}))
   }
 
+  it('Erfolg: Rückgängig nach dem Verschieben lässt den Inspektor auf demselben Recht', async () => {
+    await loadFixture()
+    const user = userEvent.setup()
+    await user.click(within(screen.getByRole('list', {name: 'Rechte'})).getAllByRole('button')[3] as HTMLElement)
+    await user.click(screen.getByRole('button', {name: 'Aktionen für Recht'}))
+    await user.click(screen.getByRole('menuitem', {name: 'Position ändern…'}))
+    const field = screen.getByRole('spinbutton', {name: 'Neue ID'})
+    await user.clear(field)
+    await user.type(field, '1')
+    await user.click(screen.getByRole('button', {name: 'Verschieben'}))
+    expect(screen.getByText('ID 1')).to.exist
+    await user.click(screen.getByRole('button', {name: /Rückgängig/}))
+    expect(screen.getByRole('button', {name: 'Name: SimkarteSperren'})).to.exist
+    expect(screen.getByText('ID 4')).to.exist
+    await user.click(screen.getByRole('button', {name: /Wiederholen/}))
+    expect(screen.getByRole('button', {name: 'Name: SimkarteSperren'})).to.exist
+    expect(screen.getByText('ID 1')).to.exist
+  })
+
+  it('Erfolg: Wechsel der Ansicht behält geöffneten Eintrag und Suchtext', async () => {
+    await loadFixture()
+    const user = userEvent.setup()
+    await user.type(screen.getByLabelText('Rechte suchen'), 'Simkarte')
+    await user.click(within(screen.getByRole('list', {name: 'Rechte'})).getAllByRole('button')[0] as HTMLElement)
+    const rightName = screen.getByRole('button', {name: /^Name: /}).getAttribute('aria-label')
+    const nav = screen.getByRole('navigation', {name: 'Bereiche'})
+    await user.click(within(nav).getByRole('button', {name: /Provider/}))
+    await user.type(screen.getByLabelText('Provider suchen'), 'Vertrag')
+    await user.click(within(screen.getByRole('list', {name: 'Provider'})).getAllByRole('button')[0] as HTMLElement)
+    const providerName = screen.getByRole('button', {name: /^Name: /}).getAttribute('aria-label')
+    await user.click(within(nav).getByRole('button', {name: /Rechte/}))
+    expect((screen.getByLabelText('Rechte suchen') as HTMLInputElement).value).to.equal('Simkarte')
+    expect(screen.getByRole('button', {name: /^Name: /}).getAttribute('aria-label')).to.equal(rightName)
+    await user.click(within(nav).getByRole('button', {name: /Provider/}))
+    expect((screen.getByLabelText('Provider suchen') as HTMLInputElement).value).to.equal('Vertrag')
+    expect(screen.getByRole('button', {name: /^Name: /}).getAttribute('aria-label')).to.equal(providerName)
+  })
+
   it('Erfolg: Änderungszähler zählt Zeilen des Diffs, auch bei Provider-Änderungen', async () => {
     await loadFixture()
     expect(await screen.findByRole('button', {name: 'Änderungen (0)'})).to.not.equal(null)
@@ -126,6 +164,15 @@ describe('App', () => {
       within(screen.getByRole('navigation', {name: 'Bereiche'})).getByRole('button', {name: /^Übersicht/}),
     )
     expect(await screen.findByRole('heading', {name: /Übersicht/})).to.not.equal(null)
+  })
+
+  it('Erfolg: „Wer darf was“ wird nachgeladen und öffnet ein Recht im Inspektor', async () => {
+    await loadFixture()
+    const nav = screen.getByRole('navigation', {name: 'Bereiche'})
+    await userEvent.click(within(nav).getByRole('button', {name: 'Wer darf was'}))
+    const list = await screen.findByRole('list', {name: /Abhängig von Bedingung/})
+    await userEvent.click(within(list).getByRole('button', {name: /SimkarteSperren/}))
+    expect(screen.getByRole('button', {name: 'Name: SimkarteSperren'})).to.exist
   })
 
   it('Erfolg: der Änderungs-Dialog wird beim Öffnen nachgeladen', async () => {

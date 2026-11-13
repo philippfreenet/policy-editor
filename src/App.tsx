@@ -17,10 +17,12 @@ import {Sidebar} from './ui/shell/Sidebar.tsx'
 import {StartScreen} from './ui/shell/StartScreen.tsx'
 import {TopBar} from './ui/shell/TopBar.tsx'
 import {useChangedLines} from './ui/useChangedLines.ts'
+import type {EntryStore} from './ui/useEntrySelection.ts'
 import {useShortcuts} from './ui/useShortcuts.ts'
 
 /* Selten genutzte Teile werden erst bei Bedarf geladen und liegen damit nicht im Start-Bundle */
 const DiffDialog = lazy(async () => ({default: (await import('./ui/shell/DiffDialog.tsx')).DiffDialog}))
+const AccessView = lazy(async () => ({default: (await import('./ui/access/AccessView.tsx')).AccessView}))
 const OverviewView = lazy(async () => ({default: (await import('./ui/overview/OverviewView.tsx')).OverviewView}))
 
 const DISCARD_TEXT = 'Ungespeicherte Änderungen gehen verloren. Trotzdem fortfahren?'
@@ -40,6 +42,8 @@ export function App(): React.JSX.Element {
   const [findingsOpen, setFindingsOpen] = useState(false)
   const [view, setView] = useState<View>('rights')
   const [selection, setSelection] = useState<EntrySelection | null>(null)
+  /* Auswahl, Suche und Filter je Ansicht; eine neue Datei beginnt mit leerer Ablage */
+  const [entryStore, setEntryStore] = useState<EntryStore>(() => new Map())
   const [pendingDiscard, setPendingDiscard] = useState<(() => void) | null>(null)
   const [confirmDownload, setConfirmDownload] = useState(false)
   const [loadedName, setLoadedName] = useState<string | null>(null)
@@ -93,6 +97,7 @@ export function App(): React.JSX.Element {
         setLoadedName(name ?? 'Eingefügter Text')
         setReloading(false)
         setSelection(null)
+        setEntryStore(new Map())
         setView('rights')
       }
     })
@@ -136,6 +141,7 @@ export function App(): React.JSX.Element {
               setLoadedName(null)
               setReloading(false)
               setSelection(null)
+              setEntryStore(new Map())
               setView('rights')
             })
           }
@@ -248,14 +254,27 @@ export function App(): React.JSX.Element {
             onOpenRight={openRight}
             policy={policy}
             selection={selection}
+            store={entryStore}
           />
         )}
         {view === 'rights' && (
-          <RightsView changed={changed} dispatch={dispatch} findings={findings} policy={policy} selection={selection} />
+          <RightsView
+            changed={changed}
+            dispatch={dispatch}
+            findings={findings}
+            policy={policy}
+            selection={selection}
+            store={entryStore}
+          />
         )}
         {view === 'overview' && (
           <Suspense fallback={<p className="text-muted">Übersicht wird geladen …</p>}>
             <OverviewView onOpenRight={openRight} policy={policy} />
+          </Suspense>
+        )}
+        {view === 'access' && (
+          <Suspense fallback={<p className="text-muted">Prüfung wird geladen …</p>}>
+            <AccessView onOpenRight={openRight} policy={policy} />
           </Suspense>
         )}
       </AppShell>
