@@ -40,6 +40,7 @@ export function Sidebar({
     {count: counts.providers, label: 'Provider', view: 'providers'},
     {count: counts.channels, label: 'Channels', view: 'channels'},
     {count: null, label: 'Übersicht', view: 'overview'},
+    {count: null, label: 'Wer darf was', view: 'access'},
   ]
   const clean = errorCount === 0 && warningCount === 0
   return (

@@ -1,4 +1,4 @@
-export type View = 'channels' | 'overview' | 'providers' | 'rights'
+export type View = 'access' | 'channels' | 'overview' | 'providers' | 'rights'
 
 export interface ViewTarget {
   field: string | null
@@ -11,7 +11,7 @@ const PATH_PATTERN = /^(channels|providers|rights)(?:\[(\d+)\])?(?:\.([^.[\]]+))
 /** Ordnet einen Befund-Pfad der Ansicht, dem Eintrag und dem Feld zu; unbekannte Pfade liefern null. */
 export function viewTarget(args: {path: string}): ViewTarget | null {
   const match = PATH_PATTERN.exec(args.path)
-  const view = match?.[1] as Exclude<View, 'overview'> | undefined
+  const view = match?.[1] as Exclude<View, 'access' | 'overview'> | undefined
   if (match === null || view === undefined) {
     return null
   }
