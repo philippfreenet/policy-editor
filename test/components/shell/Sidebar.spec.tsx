@@ -30,6 +30,11 @@ function setup(args: Partial<Parameters<typeof Sidebar>[0]> = {}): {
 describe('Sidebar', () => {
   afterEach(cleanup)
 
+  it('Erfolg: ohne berechnete Zahl heißt der Knopf nur „Änderungen“', () => {
+    setup({changedCount: null})
+    expect(screen.getByRole('button', {name: 'Änderungen'})).to.not.equal(null)
+  })
+
   it('Erfolg: Seitenleiste bleibt am Fenster haften, damit Änderungen und Status sichtbar sind', () => {
     setup()
     const classes = screen.getByRole('navigation', {name: 'Bereiche'}).closest('aside')?.className ?? ''

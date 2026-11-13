@@ -1,7 +1,8 @@
 import type {View} from '../logic/viewTarget.ts'
 
 interface SidebarProps {
-  changedCount: number
+  /** Zahl der geänderten Diff-Zeilen; null, solange sie noch berechnet wird. */
+  changedCount: number | null
   counts: {channels: number; providers: number; rights: number}
   errorCount: number
   onOpenChanges: () => void
@@ -69,7 +70,7 @@ export function Sidebar({
           onClick={onOpenChanges}
           type="button"
         >
-          Änderungen ({changedCount})
+          {changedCount === null ? 'Änderungen' : `Änderungen (${changedCount})`}
         </button>
         <button
           className={`${BUTTON} px-2 py-1 text-left ${

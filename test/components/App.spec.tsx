@@ -1,4 +1,4 @@
-import {cleanup, render, screen, within} from '@testing-library/react'
+import {cleanup, render, screen, waitFor, within} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import {expect} from 'chai'
 import sinon from 'sinon'
@@ -93,7 +93,7 @@ describe('App', () => {
 
   it('Erfolg: Änderungszähler zählt Zeilen des Diffs, auch bei Provider-Änderungen', async () => {
     await loadFixture()
-    expect(screen.getByRole('button', {name: 'Änderungen (0)'})).to.not.equal(null)
+    expect(await screen.findByRole('button', {name: 'Änderungen (0)'})).to.not.equal(null)
     await userEvent.click(
       within(screen.getByRole('navigation', {name: 'Bereiche'})).getByRole('button', {name: /^Provider/}),
     )
@@ -102,8 +102,10 @@ describe('App', () => {
     const input = screen.getByRole('textbox', {name: 'Beschreibung'})
     await userEvent.clear(input)
     await userEvent.type(input, 'Neue Beschreibung{Enter}')
-    const label = screen.getByRole('button', {name: /^Änderungen \(\d+\)$/}).textContent ?? ''
-    expect(Number(/\d+/.exec(label)?.[0])).to.be.greaterThan(0)
+    await waitFor(() => {
+      const label = screen.getByRole('button', {name: /^Änderungen \(\d+\)$/}).textContent ?? ''
+      expect(Number(/\d+/.exec(label)?.[0])).to.be.greaterThan(0)
+    })
   })
 
   it('Erfolg: ein gelöschtes Recht erhöht den Änderungszähler', async () => {
@@ -112,8 +114,24 @@ describe('App', () => {
     await userEvent.click(screen.getByRole('button', {name: 'Aktionen für Recht'}))
     await userEvent.click(screen.getByRole('menuitem', {name: 'Löschen…'}))
     await userEvent.click(screen.getAllByRole('button', {name: 'Löschen'}).at(-1) as HTMLElement)
-    const label = screen.getByRole('button', {name: /^Änderungen \(\d+\)$/}).textContent ?? ''
-    expect(Number(/\d+/.exec(label)?.[0])).to.be.greaterThan(0)
+    await waitFor(() => {
+      const label = screen.getByRole('button', {name: /^Änderungen \(\d+\)$/}).textContent ?? ''
+      expect(Number(/\d+/.exec(label)?.[0])).to.be.greaterThan(0)
+    })
+  })
+
+  it('Erfolg: die Übersicht wird beim ersten Öffnen nachgeladen', async () => {
+    await loadFixture()
+    await userEvent.click(
+      within(screen.getByRole('navigation', {name: 'Bereiche'})).getByRole('button', {name: /^Übersicht/}),
+    )
+    expect(await screen.findByRole('heading', {name: /Übersicht/})).to.not.equal(null)
+  })
+
+  it('Erfolg: der Änderungs-Dialog wird beim Öffnen nachgeladen', async () => {
+    await loadFixture()
+    await userEvent.click(await screen.findByRole('button', {name: /^Änderungen/}))
+    expect(await screen.findByRole('dialog')).to.not.equal(null)
   })
 
   it('Erfolg: Kopfleiste zeigt „Eingefügter Text“ nach Einfügen und „Neue Konfiguration“ nach Neuanlage', async () => {

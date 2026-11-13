@@ -1,25 +1,27 @@
-import {useCallback, useState} from 'react'
+import {lazy, Suspense, useCallback, useState} from 'react'
 import {serializePolicy} from './model/serialize.ts'
 import {useEditor} from './state/useEditor.ts'
 import {ChannelsView} from './ui/channels/ChannelsView.tsx'
 import {downloadText} from './ui/download.ts'
 import {ConfirmDialog} from './ui/kit/ConfirmDialog.tsx'
 import {Toast} from './ui/kit/Toast.tsx'
-import {countChangedLines} from './ui/diffRows.ts'
 import {changedRights} from './ui/logic/changedRights.ts'
 import {viewTarget} from './ui/logic/viewTarget.ts'
 import type {View} from './ui/logic/viewTarget.ts'
 import {loadSucceeds} from './ui/loadSucceeds.ts'
-import {OverviewView} from './ui/overview/OverviewView.tsx'
 import {ProvidersView} from './ui/providers/ProvidersView.tsx'
 import {RightsView} from './ui/rights/RightsView.tsx'
 import {AppShell} from './ui/shell/AppShell.tsx'
-import {DiffDialog} from './ui/shell/DiffDialog.tsx'
 import {FindingsDrawer} from './ui/shell/FindingsDrawer.tsx'
 import {Sidebar} from './ui/shell/Sidebar.tsx'
 import {StartScreen} from './ui/shell/StartScreen.tsx'
 import {TopBar} from './ui/shell/TopBar.tsx'
+import {useChangedLines} from './ui/useChangedLines.ts'
 import {useShortcuts} from './ui/useShortcuts.ts'
+
+/* Selten genutzte Teile werden erst bei Bedarf geladen und liegen damit nicht im Start-Bundle */
+const DiffDialog = lazy(async () => ({default: (await import('./ui/shell/DiffDialog.tsx')).DiffDialog}))
+const OverviewView = lazy(async () => ({default: (await import('./ui/overview/OverviewView.tsx')).OverviewView}))
 
 const DISCARD_TEXT = 'Ungespeicherte Änderungen gehen verloren. Trotzdem fortfahren?'
 const CONFIRM_TEXT = 'Die Datei enthält Fehler, die den Start des policy-service verhindern. Trotzdem herunterladen?'
@@ -113,6 +115,12 @@ export function App(): React.JSX.Element {
     </ConfirmDialog>
   )
 
+  /* Hook vor dem frühen Return: zählt die geänderten Zeilen nachgeladen */
+  const changedLines = useChangedLines({
+    current: state.policy === null ? '' : serializePolicy({policy: state.policy}),
+    original: state.original,
+  })
+
   if (state.policy === null || reloading) {
     return (
       <>
@@ -144,7 +152,6 @@ export function App(): React.JSX.Element {
   const warningCount = findings.length - errorCount
   const changed = changedRights({original: state.original, policy})
   const serialized = serializePolicy({policy})
-  const changedLines = countChangedLines({current: serialized, original: state.original})
   const showUnknownFieldHint = state.parseFindings.some((f) => f.message.startsWith('Unbekanntes Feld'))
 
   /** Lädt die aktuelle Policy herunter und zeigt die Bestätigungsmeldung. */
@@ -246,10 +253,16 @@ export function App(): React.JSX.Element {
         {view === 'rights' && (
           <RightsView changed={changed} dispatch={dispatch} findings={findings} policy={policy} selection={selection} />
         )}
-        {view === 'overview' && <OverviewView onOpenRight={openRight} policy={policy} />}
+        {view === 'overview' && (
+          <Suspense fallback={<p className="text-muted">Übersicht wird geladen …</p>}>
+            <OverviewView onOpenRight={openRight} policy={policy} />
+          </Suspense>
+        )}
       </AppShell>
       {diffOpen && (
-        <DiffDialog current={serialized} onClose={() => setDiffOpen(false)} open original={state.original} />
+        <Suspense fallback={null}>
+          <DiffDialog current={serialized} onClose={() => setDiffOpen(false)} open original={state.original} />
+        </Suspense>
       )}
       <ConfirmDialog
         confirmLabel="Herunterladen"
