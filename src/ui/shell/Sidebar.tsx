@@ -41,6 +41,7 @@ export function Sidebar({
     {count: counts.channels, label: 'Channels', view: 'channels'},
     {count: null, label: 'Übersicht', view: 'overview'},
     {count: null, label: 'Wer darf was', view: 'access'},
+    {count: null, label: 'Rohdatei', view: 'raw'},
   ]
   const clean = errorCount === 0 && warningCount === 0
   return (

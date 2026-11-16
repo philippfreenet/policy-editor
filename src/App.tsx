@@ -15,6 +15,7 @@ import {AppShell} from './ui/shell/AppShell.tsx'
 import {FindingsDrawer} from './ui/shell/FindingsDrawer.tsx'
 import {Sidebar} from './ui/shell/Sidebar.tsx'
 import {StartScreen} from './ui/shell/StartScreen.tsx'
+import {flattenPolicy} from './model/flatten.ts'
 import {TopBar} from './ui/shell/TopBar.tsx'
 import {useChangedLines} from './ui/useChangedLines.ts'
 import type {EntryStore} from './ui/useEntrySelection.ts'
@@ -23,6 +24,7 @@ import {useShortcuts} from './ui/useShortcuts.ts'
 /* Selten genutzte Teile werden erst bei Bedarf geladen und liegen damit nicht im Start-Bundle */
 const DiffDialog = lazy(async () => ({default: (await import('./ui/shell/DiffDialog.tsx')).DiffDialog}))
 const AccessView = lazy(async () => ({default: (await import('./ui/access/AccessView.tsx')).AccessView}))
+const RawView = lazy(async () => ({default: (await import('./ui/raw/RawView.tsx')).RawView}))
 const OverviewView = lazy(async () => ({default: (await import('./ui/overview/OverviewView.tsx')).OverviewView}))
 
 const DISCARD_TEXT = 'Ungespeicherte Änderungen gehen verloren. Trotzdem fortfahren?'
@@ -228,10 +230,12 @@ export function App(): React.JSX.Element {
         }
         topBar={
           <TopBar
+            canFlatten={state.policy !== null && flattenPolicy({policy: state.policy}) !== state.policy}
             canRedo={state.future.length > 0}
             canUndo={state.past.length > 0}
             fileLabel={state.original === null ? 'Neue Konfiguration' : (loadedName ?? 'policy.json')}
             onDownload={download}
+            onFlatten={() => dispatch({apply: (policy) => flattenPolicy({policy}), type: 'edit'})}
             onRedo={() => dispatch({type: 'redo'})}
             onReload={() => setReloading(true)}
             onUndo={() => dispatch({type: 'undo'})}
@@ -275,6 +279,11 @@ export function App(): React.JSX.Element {
         {view === 'access' && (
           <Suspense fallback={<p className="text-muted">Prüfung wird geladen …</p>}>
             <AccessView onOpenRight={openRight} policy={policy} />
+          </Suspense>
+        )}
+        {view === 'raw' && (
+          <Suspense fallback={<p className="text-muted">Rohansicht wird geladen …</p>}>
+            <RawView changedCount={changedLines} onOpenChanges={() => setDiffOpen(true)} text={serialized} />
           </Suspense>
         )}
       </AppShell>
