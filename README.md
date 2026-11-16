@@ -35,7 +35,9 @@ Für den statischen Produktions-Build: `npm run build`, danach `npm run preview`
 - Bestätigungsdialoge vor dem Löschen, vor dem Verwerfen ungespeicherter Änderungen und vor dem Herunterladen einer Datei mit Fehlern
 - Dunkelmodus folgt der Systemeinstellung (`prefers-color-scheme`); Animationen entfallen bei `prefers-reduced-motion`
 - Validierung nach den Regeln des Starts von `DatabaseService` im `policy-service`; Befunde tragen einen Pfad, über den die UI zur Stelle springt (Prüf-Panel)
-- Diff gegen die geladene Datei
+- Diff gegen die geladene Datei, wahlweise untereinander oder nebeneinander; startet im Vollbild (umschaltbar), Zeilennummern lassen sich ein- und ausblenden
+- Ansicht „Rohdatei“: die serialisierte `policy.json` schreibgeschützt mit Zeilennummern (umschaltbar) und Kopieren-Button; ein Link öffnet von dort die Diff-Ansicht
+- „Bedingungen glätten“ (Kopfleiste): fasst verschachtelte Gruppen mit gleichem Operator zusammen, ersetzt Gruppen mit nur einem Provider durch den Provider und löst eine Wurzel mit nur einer Untergruppe auf; Negationen bleiben unverändert. Der Schritt ist wie jede Änderung rückgängig zu machen
 - Das Schreiben folgt der festen Feldreihenfolge der `policy.json`, damit Änderungen minimale Diffs erzeugen
 - Autosave des Bearbeitungsstands im `localStorage` des Browsers
 
@@ -59,6 +61,14 @@ Die Oberfläche nutzt `@headlessui/react` (Dialoge, Menüs); die Komponententest
 
 **Ganzzahlen:** Ganzzahlige Parameterwerte werden als JavaScript-Safe-Integer geprüft (Betrag höchstens 2^53−1). Größere Java-`long`-Werte werden als Befund gemeldet und würden beim Herunterladen gerundet.
 
+## Glätten prüfen
+
+`scripts/verify-flatten.ts` prüft per Wahrheitstabelle, dass das Glätten die Logik jeder Bedingung erhält. Bei mehr als 20 Providern pro Bedingung werden stattdessen 200.000 Zufallsbelegungen getestet.
+
+```bash
+npx tsx --tsconfig tsconfig.test.json scripts/verify-flatten.ts <pfad/zur/policy.json>
+```
+
 ## Lokal, ohne Netzwerk
 
 Die Anwendung läuft vollständig im Browser, hat kein Backend und macht zur Laufzeit keine Netzwerkaufrufe. Es gibt keine Zugangsdaten und keine GitHub-Anbindung. Die geladene Datei verlässt den Rechner nicht.
@@ -68,9 +78,10 @@ Die Anwendung läuft vollständig im Browser, hat kein Backend und macht zur Lau
 ```
 src/
 ├── constants.ts   # Rollen und Provider-Klassen (Kopplung an policy-service)
-├── model/         # Dateiformat: Typen, parse, serialize, validate, Operationen
+├── model/         # Dateiformat: Typen, parse, serialize, validate, flatten, Operationen
 ├── state/         # Editor-Reducer, useEditor, Autosave
-└── ui/            # React-Komponenten und UI-Hilfsfunktionen
+└── ui/            # React-Komponenten und UI-Hilfsfunktionen (raw/: Rohdatei-Ansicht)
+scripts/           # verify-flatten.ts: Äquivalenzprüfung für das Glätten
 test/
 ├── components/    # Komponententests (Testing Library, jsdom)
 ├── fixtures/      # policy-prod.json, policy-test.json
