@@ -1,8 +1,10 @@
 interface TopBarProps {
+  canFlatten: boolean
   canRedo: boolean
   canUndo: boolean
   fileLabel: string
   onDownload: () => void
+  onFlatten: () => void
   onRedo: () => void
   onReload: () => void
   onUndo: () => void
@@ -16,10 +18,12 @@ const MOD = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator
 
 /** Schmale Kopfleiste: Dateiname, Rückgängig/Wiederholen, Neu laden und Herunterladen. */
 export function TopBar({
+  canFlatten,
   canRedo,
   canUndo,
   fileLabel,
   onDownload,
+  onFlatten,
   onRedo,
   onReload,
   onUndo,
@@ -46,6 +50,15 @@ export function TopBar({
         type="button"
       >
         ↷ Wiederholen
+      </button>
+      <button
+        className={BUTTON}
+        disabled={!canFlatten}
+        onClick={onFlatten}
+        title="Verschachtelte Bedingungen mit gleichem Operator zusammenfassen (Logik bleibt gleich)"
+        type="button"
+      >
+        Bedingungen glätten
       </button>
       <button className={BUTTON} onClick={onReload} type="button">
         Neu laden
